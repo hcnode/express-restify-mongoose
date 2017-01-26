@@ -1,6 +1,6 @@
 'use strict'
 
-const Filter = require('../../lib/resource_filter')
+const Filter = require('../../lib/resource_filter').default
 const db = require('./setup')()
 const assert = require('assert')
 const ObjectId = require('mongoose').Types.ObjectId

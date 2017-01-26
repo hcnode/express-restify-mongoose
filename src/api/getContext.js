@@ -1,8 +1,8 @@
-const http = require('http')
-const _ = require('lodash')
-const APIMethod = require('../APIMethod')
-const Promise = require('bluebird')
-const cloneMongooseQuery = require('./shared').cloneMongooseQuery
+import http from 'http'
+import _ from 'lodash'
+import APIMethod from '../APIMethod'
+import Promise from 'bluebird'
+import { cloneMongooseQuery } from './shared'
 
 /**
  *
@@ -42,4 +42,4 @@ function getContext (state, req) {
   })
 }
 
-module.exports = new APIMethod(getContext)
+export default new APIMethod(getContext)

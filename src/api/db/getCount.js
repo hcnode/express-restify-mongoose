@@ -1,5 +1,5 @@
-const APIMethod = require('../../APIMethod')
-const applyQueryToContext = require('../applyQueryToContext')
+import APIMethod from '../../APIMethod'
+import applyQueryToContext from '../applyQueryToContext'
 
 function doGetCount (state, req) {
   return applyQueryToContext(state.options, state.context.count(), state.query)
@@ -11,4 +11,4 @@ function doGetCount (state, req) {
     })
 }
 
-module.exports = new APIMethod(doGetCount)
+export default new APIMethod(doGetCount)

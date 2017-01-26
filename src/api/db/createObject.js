@@ -1,4 +1,4 @@
-const APIMethod = require('../../APIMethod')
+import APIMethod from '../../APIMethod'
 
 /**
  * Given the body of an object, query options, and an access level (all in state), creates
@@ -58,4 +58,4 @@ function doCreateObject (ermInstance, req) {
     })
 }
 
-module.exports = new APIMethod(doCreateObject)
+export default new APIMethod(doCreateObject)

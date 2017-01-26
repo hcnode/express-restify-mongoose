@@ -1,7 +1,7 @@
 const assert = require('assert')
 
 describe('resourceFilter', () => {
-  const Filter = require('../../lib/resource_filter')
+  const Filter = require('../../lib/resource_filter').default
 
   describe('getExcluded', () => {
     const filter = new Filter({})

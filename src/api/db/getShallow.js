@@ -1,8 +1,7 @@
-const http = require('http')
-const applyQueryToContext = require('../applyQueryToContext')
-const _ = require('lodash')
-
-const APIMethod = require('../../APIMethod')
+import http from 'http'
+import applyQueryToContext from '../applyQueryToContext'
+import _ from 'lodash'
+import APIMethod from '../../APIMethod'
 
 /**
  * Given an object, replaces all of its Object-type properties with the value true.
@@ -48,4 +47,4 @@ function doGetShallow (state, req) {
     })
 }
 
-module.exports = new APIMethod(doGetShallow)
+export default new APIMethod(doGetShallow)

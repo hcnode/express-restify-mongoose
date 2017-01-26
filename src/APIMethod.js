@@ -1,5 +1,6 @@
-const _ = require('lodash')
-const ERMOperation = require('./ERMOperation')
+import _ from 'lodash'
+import ERMOperation from './ERMOperation'
+import getErrorHandler from './errorHandler'
 
 const privates = new WeakMap()
 
@@ -44,7 +45,7 @@ class APIMethod {
    * @return {function(*=, *=, *=)}
    */
   getMiddleware (initialState) {
-    const errorHandler = require('./errorHandler')(initialState.options)
+    const errorHandler = getErrorHandler(initialState.options)
 
     return (req, res, next) => {
       // Grab the current operation state from the request
@@ -64,4 +65,4 @@ class APIMethod {
   }
 }
 
-module.exports = APIMethod
+export default APIMethod

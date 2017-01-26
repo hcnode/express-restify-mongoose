@@ -1,7 +1,7 @@
 const sinon = require('sinon')
 
 describe('onError', () => {
-  const onError = require('../../../lib/middleware/onError')
+  const onError = require('../../../lib/middleware/onError').default
 
   const req = {
     erm: {

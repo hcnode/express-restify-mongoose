@@ -2,7 +2,7 @@ const assert = require('assert')
 const sinon = require('sinon')
 
 describe('ensureContentType', () => {
-  const ensureContentType = require('../../../lib/middleware/ensureContentType')
+  const ensureContentType = require('../../../lib/middleware/ensureContentType').default
 
   let onError = sinon.spy()
   let next = sinon.spy()

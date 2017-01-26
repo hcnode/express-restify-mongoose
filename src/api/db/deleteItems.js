@@ -1,5 +1,5 @@
-const APIMethod = require('../../APIMethod')
-const applyQueryToContext = require('../applyQueryToContext')
+import APIMethod from '../../APIMethod'
+import applyQueryToContext from '../applyQueryToContext'
 
 /**
  * Delete all of the items specified by a query in an Express request.
@@ -14,4 +14,4 @@ function doDeleteItems (state, req) {
     .then(() => state.set('statusCode', 204))
 }
 
-module.exports = new APIMethod(doDeleteItems)
+export default new APIMethod(doDeleteItems)

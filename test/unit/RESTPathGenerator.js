@@ -1,5 +1,5 @@
 const assert = require('assert')
-const RESTPathGenerator = require('../../src/RESTPathGenerator')
+const RESTPathGenerator = require('../../src/RESTPathGenerator').default
 const joinPathsAsURL = require('../../src/RESTPathGenerator').joinPathsAsURL
 
 describe('RESTPathGenerator', () => {

@@ -1,6 +1,6 @@
-const http = require('http')
-const APIMethod = require('../../APIMethod')
-const Promise = require('bluebird')
+import http from 'http'
+import APIMethod from '../../APIMethod'
+import Promise from 'bluebird'
 
 /**
  * Delete a single object.
@@ -33,4 +33,4 @@ function doDeleteItem (state, req) {
   }
 }
 
-module.exports = new APIMethod(doDeleteItem)
+export default new APIMethod(doDeleteItem)

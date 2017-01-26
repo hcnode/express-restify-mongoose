@@ -1,17 +1,17 @@
-const Promise = require('bluebird')
+import Promise from 'bluebird'
 
 /**
  * Given global (ERM-instance-wide) query-building options, returns a function that extends a
  * partial query with local (request-specific) query options.
  *
- * @param {Object} globalOptions - ERM-instance query options
+ * @param {Object} globalOptions - ERM-cinstance query options
  * @param {Number} globalOptions.limit -
  * @param {String} globalOptions.readPreference -
  * @param {Boolean} globalOptions.lean -
  *
  * @return {function(ModelQuery, Object): Promise}
  */
-module.exports = function (globalOptions) {
+export default function (globalOptions) {
   // Note: requestSpecificQueryOptions should be the result of a prepareQuery() call
   return function (query, requestSpecificQueryOptions) {
     const promise = new Promise((resolve, reject) => {
@@ -64,4 +64,4 @@ module.exports = function (globalOptions) {
 
     return promise
   }
-}
+};

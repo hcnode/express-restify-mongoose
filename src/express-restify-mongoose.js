@@ -1,9 +1,18 @@
-const util = require('util')
-const _ = require('lodash')
+import util from 'util'
+import _ from 'lodash'
+import Filter from './resource_filter'
+import RESTPathGenerator from './RESTPathGenerator'
+import ERMOperation from './ERMOperation'
 
-const Filter = require('./resource_filter')
-const RESTPathGenerator = require('./RESTPathGenerator')
-const ERMOperation = require('./ERMOperation')
+import getContext from './api/getContext'
+import access from './middleware/access'
+import ensureContentType from './middleware/ensureContentType'
+import onError from './middleware/onError'
+import outputFn from './middleware/outputFn'
+import prepareQuery from './middleware/prepareQuery'
+import prepareOutput from './middleware/prepareOutput'
+
+import operations from './operations'
 
 let customDefaults = null
 let excludedMap = {}
@@ -36,13 +45,9 @@ const restify = function (app, model, opts = {}) {
   let options = {}
   _.assign(options, getDefaults(), opts)
 
-  const getContext = require('./api/getContext')
-  const access = require('./middleware/access')
-  const ensureContentType = require('./middleware/ensureContentType')(options)
-  const onError = require('./middleware/onError')
-  const outputFn = require('./middleware/outputFn')
-  const prepareQuery = require('./middleware/prepareQuery')(options)
-  const prepareOutput = require('./middleware/prepareOutput')(options, excludedMap)
+  const ensureContentTypeMiddleware = ensureContentType(options)
+  const prepareQueryMiddleware = prepareQuery(options)
+  const prepareOutputMiddleware = prepareOutput(options, excludedMap)
 
   if (!_.isArray(options.private)) {
     throw new Error('"options.private" must be an array of fields')
@@ -103,7 +108,7 @@ const restify = function (app, model, opts = {}) {
 
   const initialOperationState = ERMOperation.initialize(model, options, excludedMap)
 
-  const ops = require('./operations')(initialOperationState)
+  const ops = operations(initialOperationState)
   const restPaths = new RESTPathGenerator(options.prefix, options.version, options.name)
 
   if (_.isUndefined(app.delete)) {
@@ -122,7 +127,7 @@ const restify = function (app, model, opts = {}) {
 
   function deprecatePrepareQuery (text) {
     return util.deprecate(
-      prepareQuery,
+      prepareQueryMiddleware,
       `express-restify-mongoose: in a future major version, ${text} ` +
       `Use PATCH instead.`
     )
@@ -131,35 +136,35 @@ const restify = function (app, model, opts = {}) {
   // Retrieval
 
   app.get(
-    restPaths.allDocuments, prepareQuery, options.preMiddleware, contextMiddleware,
+    restPaths.allDocuments, prepareQueryMiddleware, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getItems,
-    prepareOutput
+    prepareOutputMiddleware
   )
 
   app.get(
-    restPaths.allDocumentsCount, prepareQuery, options.preMiddleware, contextMiddleware,
+    restPaths.allDocumentsCount, prepareQueryMiddleware, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getCount,
-    prepareOutput
+    prepareOutputMiddleware
   )
 
   app.get(
-    restPaths.singleDocument, prepareQuery, options.preMiddleware, contextMiddleware,
+    restPaths.singleDocument, prepareQueryMiddleware, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getItem,
-    prepareOutput
+    prepareOutputMiddleware
   )
 
   app.get(
-    restPaths.singleDocumentShallow, prepareQuery, options.preMiddleware, contextMiddleware,
+    restPaths.singleDocumentShallow, prepareQueryMiddleware, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getShallow,
-    prepareOutput
+    prepareOutputMiddleware
   )
 
   // Creation
 
   app.post(
-    restPaths.allDocuments, prepareQuery, ensureContentType, options.preMiddleware,
+    restPaths.allDocuments, prepareQueryMiddleware, ensureContentTypeMiddleware, options.preMiddleware,
     options.preCreate, accessMiddleware, ops.createObject,
-    prepareOutput
+    prepareOutputMiddleware
   )
 
   // Modification
@@ -167,48 +172,50 @@ const restify = function (app, model, opts = {}) {
   app.post(
     restPaths.singleDocument,
     deprecatePrepareQuery('the POST method to update resources will be removed.'),
-    ensureContentType, options.preMiddleware, contextMiddleware,
+    ensureContentTypeMiddleware, options.preMiddleware, contextMiddleware,
     options.preUpdate, accessMiddleware, ops.modifyObject,
-    prepareOutput
+    prepareOutputMiddleware
   )
 
   app.put(
     restPaths.singleDocument,
     deprecatePrepareQuery(`the PUT method will replace rather than update a resource.`),
-    ensureContentType, options.preMiddleware, contextMiddleware,
+    ensureContentTypeMiddleware, options.preMiddleware, contextMiddleware,
     options.preUpdate, accessMiddleware, ops.modifyObject,
-    prepareOutput
+    prepareOutputMiddleware
   )
 
   app.patch(
     restPaths.singleDocument,
-    prepareQuery, ensureContentType, options.preMiddleware, contextMiddleware,
+    prepareQueryMiddleware, ensureContentTypeMiddleware, options.preMiddleware, contextMiddleware,
     options.preUpdate, accessMiddleware, ops.modifyObject,
-    prepareOutput
+    prepareOutputMiddleware
   )
 
   // Deletion
 
   app.delete(
     restPaths.allDocuments,
-    prepareQuery, options.preMiddleware, contextMiddleware,
+    prepareQueryMiddleware, options.preMiddleware, contextMiddleware,
     options.preDelete, ops.deleteItems,
-    prepareOutput
+    prepareOutputMiddleware
   )
 
   app.delete(
     restPaths.singleDocument,
-    prepareQuery, options.preMiddleware, contextMiddleware,
+    prepareQueryMiddleware, options.preMiddleware, contextMiddleware,
     options.preDelete, ops.deleteItem,
-    prepareOutput
+    prepareOutputMiddleware
   )
 
   return restPaths.allDocuments
 }
 
-module.exports = {
-  defaults: function (options) {
-    customDefaults = options
-  },
-  serve: restify
+function defaults (options) {
+  customDefaults = options
+}
+
+export {
+  defaults,
+  restify as serve
 }

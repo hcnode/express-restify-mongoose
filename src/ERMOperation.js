@@ -2,9 +2,9 @@
  * @module './ERMOperation'
  */
 
-const ImmutableRecord = require('immutable-record')
-const _ = require('lodash')
-const Model = require('mongoose').Model
+import ImmutableRecord from 'immutable-record'
+import _ from 'lodash'
+import { Model } from 'mongoose'
 
 /**
  * Underlying record for the Operation class
@@ -196,4 +196,4 @@ function isModel (model) {
   return Object.getPrototypeOf(model) === Model
 }
 
-module.exports = ERMOperation
+export default ERMOperation

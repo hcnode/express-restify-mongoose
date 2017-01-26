@@ -1,3 +1,5 @@
+import getErrorHandler from '../errorHandler'
+
 /**
  * Returns Express middleware that calls the "access" function in options and adds the result to
  * the request object (as "req.access")
@@ -8,8 +10,8 @@
  * @param {function(req: Object, done: function?)} options.access - tells us what the access level for this route is, based on the request
  * @return {function(req, res, next)}
  */
-module.exports = function (options) {
-  const errorHandler = require('../errorHandler')(options)
+export default function (options) {
+  const errorHandler = getErrorHandler(options)
 
   return function (req, res, next) {
     const handler = function (err, access) {
@@ -33,4 +35,4 @@ module.exports = function (options) {
       handler(null, options.access(req))
     }
   }
-}
+};

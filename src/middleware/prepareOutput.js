@@ -1,8 +1,9 @@
-const _ = require('lodash')
-const async = require('async')
+import _ from 'lodash'
+import async from 'async'
+import getErrorHandler from '../errorHandler'
 
-module.exports = function (options, excludedMap) {
-  const errorHandler = require('../errorHandler')(options)
+export default function (options, excludedMap) {
+  const errorHandler = getErrorHandler(options)
 
   return function (req, res, next) {
     let postMiddleware
@@ -56,4 +57,4 @@ module.exports = function (options, excludedMap) {
       }
     })
   }
-}
+};

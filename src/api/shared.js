@@ -1,4 +1,4 @@
-const _ = require('lodash')
+import _ from 'lodash'
 
 /**
  * Given a operation state, returns true if the 'distinct' option in the state's query
@@ -7,12 +7,12 @@ const _ = require('lodash')
  * @param {ERMOperation} state
  * @return {boolean}
  */
-module.exports.isDistinctExcluded = function (state) {
+export function isDistinctExcluded (state) {
   return state.options.filter.isExcluded(state.query.distinct, {
     access: state.accessLevel,
     excludedMap: state.excludedMap
   })
-}
+};
 
 /**
  * Given a mongoose query, clones the query so that changes to the query can be made without
@@ -21,10 +21,10 @@ module.exports.isDistinctExcluded = function (state) {
  * @param {ModelQuery} mongooseQuery
  * @return {*}
  */
-module.exports.cloneMongooseQuery = function (mongooseQuery) {
+export function cloneMongooseQuery (mongooseQuery) {
   if (!mongooseQuery || !_.isFunction(mongooseQuery.toConstructor)) {
     return mongooseQuery
   }
 
   return mongooseQuery.toConstructor()()
-}
+};

@@ -1,8 +1,7 @@
-const isDistinctExcluded = require('./../shared').isDistinctExcluded
-const _ = require('lodash')
-
-const APIMethod = require('../../APIMethod')
-const applyQueryToContext = require('../applyQueryToContext')
+import { isDistinctExcluded } from './../shared'
+import _ from 'lodash'
+import APIMethod from '../../APIMethod'
+import applyQueryToContext from '../applyQueryToContext'
 
 /**
  * Get all of the items matching a query inside some consumer-provided context.
@@ -60,4 +59,4 @@ function getTotalCountHeader (state, req) {
   return applyQueryToContext(state.options, state.context.count(), noSkipOrLimit)
 }
 
-module.exports = new APIMethod(doGetItems)
+export default new APIMethod(doGetItems)

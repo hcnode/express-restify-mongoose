@@ -2,7 +2,7 @@
  * Generate RESTful URI paths for the an Express router.
  */
 
-const _ = require('lodash')
+import _ from 'lodash'
 
 /**
  * Given an array of URI paths, joins them together using forward slashes.
@@ -101,5 +101,5 @@ function ensureString (value, valueName = 'value') {
   return null
 }
 
-module.exports = RESTPathGenerator
-module.exports.joinPathsAsURL = joinPathsAsURL
+export default RESTPathGenerator
+export { joinPathsAsURL }

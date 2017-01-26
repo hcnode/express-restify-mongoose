@@ -1,7 +1,7 @@
-const APIMethod = require('../../APIMethod')
-const moredots = require('moredots')
-const _ = require('lodash')
-const http = require('http')
+import APIMethod from '../../APIMethod'
+import moredots from 'moredots'
+import _ from 'lodash'
+import http from 'http'
 
 /**
  * Given a document and the document's model, depopulate any populated fields in the document.
@@ -122,4 +122,4 @@ function performUpdateAndSave (state, req, updates) {
   return document.save()
 }
 
-module.exports = new APIMethod(doModifyObject)
+export default new APIMethod(doModifyObject)

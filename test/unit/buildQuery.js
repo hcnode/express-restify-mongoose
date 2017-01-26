@@ -2,7 +2,7 @@ const assert = require('assert')
 const sinon = require('sinon')
 
 describe('buildQuery', () => {
-  const buildQuery = require('../../lib/buildQuery')
+  const buildQuery = require('../../lib/buildQuery').default
 
   let query = {
     where: sinon.spy(),

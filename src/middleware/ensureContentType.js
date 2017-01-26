@@ -1,5 +1,7 @@
-module.exports = function (options) {
-  const errorHandler = require('../errorHandler')(options)
+import getErrorHandler from '../errorHandler'
+
+export default function (options) {
+  const errorHandler = getErrorHandler(options)
 
   return function ensureContentType (req, res, next) {
     const ct = req.headers['content-type']
@@ -14,4 +16,4 @@ module.exports = function (options) {
 
     next()
   }
-}
+};

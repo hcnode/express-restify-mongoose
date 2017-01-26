@@ -1,6 +1,6 @@
-const http = require('http')
+import http from 'http'
 
-module.exports = function (options) {
+export default function (options) {
   return function (req, res, next) {
     return function (err) {
       req.erm = req.erm || {}
@@ -14,4 +14,4 @@ module.exports = function (options) {
       options.onError(err, req, res, next)
     }
   }
-}
+};

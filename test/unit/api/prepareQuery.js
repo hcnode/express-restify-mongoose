@@ -2,7 +2,7 @@ const assert = require('assert')
 const _ = require('lodash')
 
 describe('prepareQuery', () => {
-  const prepareQuery = require('../../../lib/api/prepareQuery')
+  const prepareQuery = require('../../../lib/api/prepareQuery').default
 
   /**
    * This test of the prepareQuery() middleware passes if prepareQuery() successfully prepares

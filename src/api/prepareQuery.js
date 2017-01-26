@@ -1,6 +1,6 @@
-const _ = require('lodash')
-const Promise = require('bluebird')
-const isCoordinates = require('is-coordinates')
+import _ from 'lodash'
+import Promise from 'bluebird'
+import isCoordinates from 'is-coordinates'
 
 function parseQueryOptions (queryOptions) {
   if (queryOptions.select && _.isString(queryOptions.select)) {
@@ -117,7 +117,7 @@ const QUERY_OPTIONS_WHITELIST = Object.freeze(
  * @param {boolean} allowRegex - whether or not regular expressions are allowed in the query string
  * @return {function(Object): function(Object): Promise}
  */
-module.exports = function (allowRegex) {
+export default function (allowRegex) {
   return function (queryStringObject = {}) {
     return new Promise((resolve, reject) => {
       const baseQueryOptions = {}
@@ -154,4 +154,4 @@ module.exports = function (allowRegex) {
       return resolve(parsedOptions)
     })
   }
-}
+};

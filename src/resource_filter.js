@@ -1,6 +1,6 @@
-const _ = require('lodash')
-const detective = require('mongoose-detective')
-const weedout = require('weedout')
+import _ from 'lodash'
+import detective from 'mongoose-detective'
+import weedout from 'weedout'
 
 /**
  * A wrapper around a Mongoose model that exposes utilities for filtering document keys
@@ -203,4 +203,4 @@ Filter.prototype.filterObject = function (resource, opts = {}) {
   return filtered
 }
 
-module.exports = Filter
+export default Filter

@@ -1,7 +1,7 @@
 const assert = require('assert')
 const _ = require('lodash')
-const APIMethod = require('../../src/APIMethod')
-const ERMOperation = require('../../src/ERMOperation')
+const APIMethod = require('../../src/APIMethod').default
+const ERMOperation = require('../../src/ERMOperation').default
 
 /**
  * The Promise-based API operation we're going to use for the tests.

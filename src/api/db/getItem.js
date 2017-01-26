@@ -1,8 +1,7 @@
-const isDistinctExcluded = require('./../shared').isDistinctExcluded
-const http = require('http')
-
-const APIMethod = require('../../APIMethod')
-const applyQueryToContext = require('../applyQueryToContext')
+import { isDistinctExcluded } from './../shared'
+import http from 'http'
+import APIMethod from '../../APIMethod'
+import applyQueryToContext from '../applyQueryToContext'
 
 /**
  * Retrieve a single document based on a request. Use the query and context filter specified in
@@ -29,4 +28,4 @@ function doGetItem (state, req) {
     })
 }
 
-module.exports = new APIMethod(doGetItem)
+export default new APIMethod(doGetItem)

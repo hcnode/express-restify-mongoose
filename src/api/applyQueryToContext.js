@@ -1,5 +1,5 @@
-const getQueryBuilder = require('../buildQuery')
-const cloneMongooseQuery = require('./shared').cloneMongooseQuery
+import getQueryBuilder from '../buildQuery'
+import { cloneMongooseQuery } from './shared'
 
 /**
  * Given ERM query options, a Mongoose context (a ModelQuery), and a Mongo
@@ -17,8 +17,8 @@ const cloneMongooseQuery = require('./shared').cloneMongooseQuery
  *
  * @return {Promise}
  */
-module.exports = function applyQueryToContext (queryOptions, mongooseContext, queryStringObject) {
+export default function applyQueryToContext (queryOptions, mongooseContext, queryStringObject) {
   const buildQuery = getQueryBuilder(queryOptions)
   return buildQuery(cloneMongooseQuery(mongooseContext), queryStringObject)
-}
+};
 
