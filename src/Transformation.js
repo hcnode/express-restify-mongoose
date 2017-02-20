@@ -29,25 +29,47 @@ class Transformation {
    * This middleware is "atomic" in the sense that the request won't be mutated (if the
    * operation is well-behaved) until the operation is finished running.
    *
-   * @param {ERMOperation} initialState - initial ERM operation state - just needs to have "options" set
+   * @param {ERMOperation} initialState - initial ERM operation state - just needs to have
+   *   "options" set
    * @return {function(*=, *=, *=)}
    */
   getMiddleware (initialState) {
-    const errorHandler = require('./errorHandler')(initialState.options)
+
     const transformation = privates.get(this)
 
-    return (req, res, next) => {
-      const currentState = ERMOperation.deserializeRequest(req)
+    if (initialState.options.type === 'koa') {
 
-      transformation(currentState, req)
-        .then(resultState => {
-          // Add the result to the request object for the next middleware in the stack
-          _.merge(req, resultState.serializeToRequest())
+      return (ctx, next) => {
+        let universalCtx = new Context(ctx,'koa');
+        const currentState = ERMOperation.deserializeRequest(universalCtx)
 
-          return next()
-        })
-        .catch(errorHandler(req, res, next))
+        return transformation(currentState, ctx)
+          .then((resultState) => {
+            // Add the result to the request object for the next middleware in the stack
+            _.merge(universalCtx.state, resultState.serializeToRequest())
+
+            return next()
+          })
+      };
+
+    } else {
+      const errorHandler = require('./errorHandler')(initialState.options)
+
+      return (req, res, next) => {
+        let universalCtx = new Context({request:req,response:res});
+        const currentState = ERMOperation.deserializeRequest(universalCtx)
+
+        transformation(currentState, universalCtx)
+          .then(resultState => {
+            // Add the result to the request object for the next middleware in the stack
+            _.merge(universalCtx.request, resultState.serializeToRequest())
+
+            return next()
+          })
+          .catch(errorHandler(req, res, next))
+      }
     }
+
   }
 
 }

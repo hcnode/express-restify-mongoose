@@ -1,9 +1,9 @@
 const Transformation = require('../Transformation').Transformation
 const Promise = require('bluebird')
 
-function filterRequestBody (state, req) {
+function filterRequestBody (state, ctx) {
   const filteredObject = state.options.filter.filterObject(
-    req.body || {},
+    ctx.reqBody || {},
     {
       access: state.accessLevel,
       populate: state.query.populate
@@ -20,7 +20,7 @@ function filterRequestBody (state, req) {
 
   // HACK: consumer hooks might depend on us removing the _id and version key
   // Ideally, we don't mutate the request body.
-  req.body = filteredObject
+  ctx.reqBody = filteredObject
 
   return Promise.resolve(state.set('body', filteredObject))
 }
