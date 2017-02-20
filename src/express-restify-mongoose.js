@@ -38,12 +38,15 @@ const restify = function (app, model, opts = {}) {
 
   const getContext = require('./api/getContext')
   const filterRequestBody = require('./api/filterRequestBody')
-  const access = require('./middleware/access')
-  const ensureContentType = require('./middleware/ensureContentType')(options)
-  const onError = require('./middleware/onError')
-  const outputFn = require('./middleware/outputFn')
-  const prepareQuery = require('./middleware/prepareQuery')(options)
-  const prepareOutput = require('./middleware/prepareOutput')(options, excludedMap)
+
+  const middlewarePath = options.koa ? './koa/' : './middleware';
+
+  const access = require(middlewarePath+'access')
+  const ensureContentType = require(middlewarePath + 'ensureContentType')(options)
+  const onError = require(middlewarePath + 'onError')
+  const outputFn = require(middlewarePath + 'outputFn')
+  const prepareQuery = require(middlewarePath + 'prepareQuery')(options)
+  const prepareOutput = require(middlewarePath + 'prepareOutput')(options, excludedMap)
 
   if (!_.isArray(options.private)) {
     throw new Error('"options.private" must be an array of fields')
@@ -106,7 +109,7 @@ const restify = function (app, model, opts = {}) {
 
   let router = options.router ? options.router : app;
 
-  if( options.koa ) {
+  if( options.koa ) { // koa2
 
     router.use((ctx, next) => {
       // At the start of each request, add our initial operation state
@@ -117,7 +120,7 @@ const restify = function (app, model, opts = {}) {
     const onError = options.onError ? options.onError :  require('./koa/onError')(options);
     router.use(onError);
 
-  } else {
+  } else {    // Express
 
     if (!options.onError) {
       options.onError = onError(!options.restify)
