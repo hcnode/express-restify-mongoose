@@ -39,7 +39,7 @@ const restify = function (app, model, opts = {}) {
   const getContext = require('./api/getContext')
   const filterRequestBody = require('./api/filterRequestBody')
 
-  const middlewarePath = (options.type === 'koa') ? './koa/' : './middleware';
+  const middlewarePath = (options.framework === 'koa') ? './koa/' : './middleware';
 
   const access = require(middlewarePath+'access')
   const ensureContentType = require(middlewarePath + 'ensureContentType')(options)
@@ -109,7 +109,7 @@ const restify = function (app, model, opts = {}) {
 
   let router = options.router ? options.router : app;
 
-  if( options.type === 'koa' ) { // koa2
+  if( options.framework === 'koa' ) { // koa2
 
     router.use((ctx, next) => {
       // At the start of each request, add our initial operation state

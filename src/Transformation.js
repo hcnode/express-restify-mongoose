@@ -40,7 +40,7 @@ class Transformation {
     if (initialState.options.type === 'koa') {
 
       return (ctx, next) => {
-        let universalCtx = new Context(ctx,'koa');
+        let universalCtx = new KoaContext(ctx);
         const currentState = ERMOperation.deserializeRequest(universalCtx)
 
         return transformation(currentState, ctx)
@@ -56,7 +56,7 @@ class Transformation {
       const errorHandler = require('./errorHandler')(initialState.options)
 
       return (req, res, next) => {
-        let universalCtx = new Context({request:req,response:res});
+        let universalCtx = new ExpressContext({request:req,response:res});
         const currentState = ERMOperation.deserializeRequest(universalCtx)
 
         transformation(currentState, universalCtx)

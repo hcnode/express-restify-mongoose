@@ -2,46 +2,51 @@
 
 // STILL WORKING ON THIS ...
 
- class Context {
+class Context {
 
-   constructor(ctx,type) {
-     this._ctx = ctx;     // express = req, koa = ctx
-     this._type = type || 'express';
-   }
+  constructor (ctx) {
+    this._ctx = ctx;     // express = { request: req, response: res }, koa = ctx
+  }
 
-   isKoa() {
-     return this._type === 'koa'
-   }
+  get body () {
+    return this._ctx.request.body;
+  }
 
-   get reqBody() {
-     return this.isKoa() ? this._ctx.request.body : this._ctx.body
-   }
+}
 
-   set reqBody(val) {
-     if( this.isKoa() ) {
-       this._ctx.request.body = val;
-     } else {
-       this._ctx.body = val;
-     }
-   }
+class KoaContext extends Context {
 
-   get resBody() {
-     return this.isKoa() ? this._ctx.response.body : this._ctx.body
-   }
+  constructor (ctx) {
+    super(ctx);
+  }
 
-   set resBody(val) {
-     if( this.isKoa() ) {
-       this._ctx.response.body = val;
-     } else {
-       this._ctx.body = val;
-     }
-   }
+  set body (val) {
+    this._ctx.request.body = val;
+  }
 
-   get erm() {
-     return this.isKoa() ? this._ctx.state.erm : this._ctx.erm
-   }
+  get erm() {
+    return this._ctx.state.erm;
+  }
 
+}
 
- }
+class ExpressContext extends Context {
 
- module.exports = Context;
+  constructor (ctx) {
+    super(ctx);
+  }
+
+  set body (val) {
+    this._ctx.body = val;
+  }
+
+  get erm() {
+    return this._ctx.request.erm;
+  }
+
+}
+
+module.exports = {
+  KoaContext: KoaContext,
+  ExpressContext: ExpressContext
+};
