@@ -1,6 +1,7 @@
 const _ = require('lodash')
 const async = require('async')
 const Promise = require('bluebird')
+const getPostMiddlewareForMethod = require('../api/getPostMiddlewareForMethod')
 
 module.exports = function (options, excludedMap) {
   const errorHandler = require('../errorHandler')(options)
@@ -54,26 +55,5 @@ module.exports = function (options, excludedMap) {
           .catch(errorHandler(req, res, next))
       }
     )
-  }
-}
-
-function getPostMiddlewareForMethod (options, method, statusCode) {
-  // HACK: we only need the status code because POST is doing double duty
-  // for object creation and modification.
-  switch (method.toLowerCase()) {
-    case 'get':
-      return options.postRead
-
-    case 'post':
-      return (statusCode === 201)
-        ? options.postCreate
-        : options.postUpdate
-
-    case 'put':
-    case 'patch':
-      return options.postUpdate
-
-    case 'delete':
-      return options.postDelete
   }
 }

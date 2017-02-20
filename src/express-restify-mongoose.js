@@ -92,13 +92,6 @@ const restify = function (app, model, opts = {}) {
   options.postUpdate = ensureValueIsArray(options.postUpdate)
   options.postDelete = ensureValueIsArray(options.postDelete)
 
-  if (!options.onError) {
-    options.onError = onError(!options.restify)
-  }
-
-  if (!options.outputFn) {
-    options.outputFn = outputFn(!options.restify)
-  }
 
   options.name = options.name || model.modelName
 
@@ -111,12 +104,36 @@ const restify = function (app, model, opts = {}) {
     app.delete = app.del
   }
 
-  app.use((req, res, next) => {
-    // At the start of each request, add our initial operation state
-    _.merge(req, initialOperationState.serializeToRequest())
+  let router = options.router ? options.router : app;
 
-    next()
-  })
+  if( options.koa ) {
+
+    router.use((ctx, next) => {
+      // At the start of each request, add our initial operation state
+      _.merge(ctx.state, initialOperationState.serializeToRequest());
+      return next();
+    })
+
+    const onError = options.onError ? options.onError :  require('./koa/onError')(options);
+    router.use(onError);
+
+  } else {
+
+    if (!options.onError) {
+      options.onError = onError(!options.restify)
+    }
+
+    if (!options.outputFn) {
+      options.outputFn = outputFn(!options.restify)
+    }
+
+    router.use((req, res, next) => {
+      // At the start of each request, add our initial operation state
+      _.merge(req, initialOperationState.serializeToRequest())
+
+      next()
+    })
+  }
 
   const accessMiddleware = options.access ? access(options) : []
   const contextMiddleware = getContext.getMiddleware(initialOperationState)
@@ -132,25 +149,25 @@ const restify = function (app, model, opts = {}) {
 
   // Retrieval
 
-  app.get(
+  router.get(
     restPaths.allDocuments, prepareQuery, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getItems,
     prepareOutput
   )
 
-  app.get(
+  router.get(
     restPaths.allDocumentsCount, prepareQuery, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getCount,
     prepareOutput
   )
 
-  app.get(
+  router.get(
     restPaths.singleDocument, prepareQuery, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getItem,
     prepareOutput
   )
 
-  app.get(
+  router.get(
     restPaths.singleDocumentShallow, prepareQuery, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getShallow,
     prepareOutput
@@ -158,7 +175,7 @@ const restify = function (app, model, opts = {}) {
 
   // Creation
 
-  app.post(
+  router.post(
     restPaths.allDocuments, prepareQuery, ensureContentType, options.preMiddleware,
     options.preCreate, accessMiddleware, filterBodyMiddleware, ops.createObject,
     prepareOutput
@@ -166,7 +183,7 @@ const restify = function (app, model, opts = {}) {
 
   // Modification
 
-  app.post(
+  router.post(
     restPaths.singleDocument,
     deprecatePrepareQuery('the POST method to update resources will be removed.'),
     ensureContentType, options.preMiddleware, contextMiddleware,
@@ -174,7 +191,7 @@ const restify = function (app, model, opts = {}) {
     prepareOutput
   )
 
-  app.put(
+  router.put(
     restPaths.singleDocument,
     deprecatePrepareQuery(`the PUT method will replace rather than update a resource.`),
     ensureContentType, options.preMiddleware, contextMiddleware,
@@ -182,7 +199,7 @@ const restify = function (app, model, opts = {}) {
     prepareOutput
   )
 
-  app.patch(
+  router.patch(
     restPaths.singleDocument,
     prepareQuery, ensureContentType, options.preMiddleware, contextMiddleware,
     options.preUpdate, accessMiddleware, filterBodyMiddleware, ops.modifyObject,
@@ -191,14 +208,14 @@ const restify = function (app, model, opts = {}) {
 
   // Deletion
 
-  app.delete(
+  router.delete(
     restPaths.allDocuments,
     prepareQuery, options.preMiddleware, contextMiddleware,
     options.preDelete, ops.deleteItems,
     prepareOutput
   )
 
-  app.delete(
+  router.delete(
     restPaths.singleDocument,
     prepareQuery, options.preMiddleware, contextMiddleware,
     options.preDelete, ops.deleteItem,

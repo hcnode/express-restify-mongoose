@@ -154,11 +154,11 @@ class ERMOperation extends OperationRecord {
  *
  * @alias module:ERMOperation.deserializeRequest
  *
- * @param {Object} req - the Express request
+ * @param {Object} req - the Express request or Koa2 ctx object
  * @return {ERMOperation}
  */
 ERMOperation.deserializeRequest = function (req) {
-  const reqErm = req.erm || {}
+  const reqErm = (req.state && req.state.erm ) ? req.state.erm : (req.erm || {})
 
   return new ERMOperation(
     _.omitBy({
