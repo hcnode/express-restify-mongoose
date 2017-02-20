@@ -29,6 +29,10 @@ class KoaContext extends Context {
     return this._ctx.state.erm
   }
 
+  get privateErm () {
+    return this._ctx.state._erm
+  }
+
 }
 
 class ExpressContext extends Context {
@@ -39,6 +43,10 @@ class ExpressContext extends Context {
 
   get erm () {
     return this._ctx.request.erm
+  }
+
+  get privateErm () {
+    return this._ctx.request._erm
   }
 
 }
