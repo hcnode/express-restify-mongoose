@@ -39,9 +39,9 @@ const restify = function (app, model, opts = {}) {
   const getContext = require('./api/getContext')
   const filterRequestBody = require('./api/filterRequestBody')
 
-  const middlewarePath = (options.framework === 'koa') ? './koa/' : './middleware';
+  const middlewarePath = (options.framework === 'koa') ? './koa/' : './middleware'
 
-  const access = require(middlewarePath+'access')
+  const access = require(middlewarePath + 'access')
   const ensureContentType = require(middlewarePath + 'ensureContentType')(options)
   const onError = require(middlewarePath + 'onError')
   const outputFn = require(middlewarePath + 'outputFn')
@@ -95,7 +95,6 @@ const restify = function (app, model, opts = {}) {
   options.postUpdate = ensureValueIsArray(options.postUpdate)
   options.postDelete = ensureValueIsArray(options.postDelete)
 
-
   options.name = options.name || model.modelName
 
   const initialOperationState = ERMOperation.initialize(model, options, excludedMap)
@@ -107,21 +106,18 @@ const restify = function (app, model, opts = {}) {
     app.delete = app.del
   }
 
-  let router = options.router ? options.router : app;
+  let router = options.router ? options.router : app
 
-  if( options.framework === 'koa' ) { // koa2
-
+  if (options.framework === 'koa') { // koa2
     router.use((ctx, next) => {
       // At the start of each request, add our initial operation state
-      _.merge(ctx.state, initialOperationState.serializeToRequest());
-      return next();
+      _.merge(ctx.state, initialOperationState.serializeToRequest())
+      return next()
     })
 
-    const onError = options.onError ? options.onError :  require('./koa/onError')(options);
-    router.use(onError);
-
+    const onError = options.onError ? options.onError : require('./koa/onError')(options)
+    router.use(onError)
   } else {    // Express
-
     if (!options.onError) {
       options.onError = onError(!options.restify)
     }

@@ -1,24 +1,20 @@
-'use strict';
-
+'use strict'
 const http = require('http')
 const serializeError = require('serialize-error')
 
 /**
  *
  * @param options {Object}
- * @param [options.buildErrorResponse] {function} Sync function(ctx,errmserializedErr) to build and return the JSON response object
+ * @param [options.buildErrorResponse] {function} Sync function(ctx,errmserializedErr) to build and
+ *   return the JSON response object
  * @returns {onError}
  */
-
 module.exports = function (options) {
-
   return function onError (ctx, next) {
-
     return next()
       .then(() => {
-        return Promise.resolve();
+        return Promise.resolve()
       }, (err) => {
-
         const serializedErr = serializeError(err)
         delete serializedErr.stack
 
@@ -35,13 +31,11 @@ module.exports = function (options) {
           ctx.state.erm.statusCode = ctx.state.erm.statusCode && ctx.state.erm.statusCode >= 400 ? ctx.state.erm.statusCode : 400
         }
 
-        ctx.response.header['Content-Type'] = 'application/json';
+        ctx.response.header['Content-Type'] = 'application/json'
 
-        ctx.status = ctx.state.erm.statusCode || 500;
-        ctx.body = options.buildErrorResponse ? options.buildErrorResponse(ctx,err,serializedErr) : serializedErr;
-
-      });
-  };
-
-};
+        ctx.status = ctx.state.erm.statusCode || 500
+        ctx.body = options.buildErrorResponse ? options.buildErrorResponse(ctx, err, serializedErr) : serializedErr
+      })
+  }
+}
 

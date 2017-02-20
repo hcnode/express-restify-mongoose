@@ -1,7 +1,7 @@
 const _ = require('lodash')
 const async = require('async')
 const Promise = require('bluebird')
-const getPostMiddlewareForMethod = require('../api/getPostMiddlewareForMethod')
+const getPostMiddlewareForMethod = require('../api/shared').getPostMiddlewareForMethod
 
 module.exports = function (options, excludedMap) {
   const errorHandler = require('../errorHandler')(options)

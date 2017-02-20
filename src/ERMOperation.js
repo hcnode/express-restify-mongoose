@@ -158,8 +158,7 @@ class ERMOperation extends OperationRecord {
  * @return {ERMOperation}
  */
 ERMOperation.deserializeRequest = function (req) {
-  const reqErm = (req.state && req.state.erm ) ? req.state.erm : (req.erm || {})
-
+  const reqErm = (req.state && req.state.erm) ? req.state.erm : (req.erm || {})
   return new ERMOperation(
     _.omitBy({
       model: reqErm.model,

@@ -1,47 +1,44 @@
-'use strict';
+'use strict'
 
 // STILL WORKING ON THIS ...
 
 class Context {
 
   constructor (ctx) {
-    this._ctx = ctx;     // express = { request: req, response: res }, koa = ctx
+    this._ctx = ctx     // express = { request: req, response: res }, koa = ctx
   }
 
-  get body () {
-    return this._ctx.request.body;
+  get requestBody () {
+    return this._ctx.request.body
+  }
+
+  // Hack needed by filterRequestBody
+  set requestBody (val) {
+    this._ctx.request.body = val
+  }
+
+  set responseBody (val) {
+    this._ctx.response.body = val
   }
 
 }
 
 class KoaContext extends Context {
 
-  constructor (ctx) {
-    super(ctx);
-  }
-
-  set body (val) {
-    this._ctx.request.body = val;
-  }
-
-  get erm() {
-    return this._ctx.state.erm;
+  get erm () {
+    return this._ctx.state.erm
   }
 
 }
 
 class ExpressContext extends Context {
 
-  constructor (ctx) {
-    super(ctx);
+  constructor (req, res) {
+    super({ request: req, response: res })
   }
 
-  set body (val) {
-    this._ctx.body = val;
-  }
-
-  get erm() {
-    return this._ctx.request.erm;
+  get erm () {
+    return this._ctx.request.erm
   }
 
 }
@@ -49,4 +46,4 @@ class ExpressContext extends Context {
 module.exports = {
   KoaContext: KoaContext,
   ExpressContext: ExpressContext
-};
+}

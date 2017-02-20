@@ -1,6 +1,8 @@
 const _ = require('lodash')
 const ERMOperation = require('./ERMOperation')
-
+const Context = require('./Context')
+const ExpressContext = Context.ExpressContext
+const KoaContext = Context.KoaContext
 const privates = new WeakMap()
 
 /**
@@ -34,13 +36,11 @@ class Transformation {
    * @return {function(*=, *=, *=)}
    */
   getMiddleware (initialState) {
-
     const transformation = privates.get(this)
 
-    if (initialState.options.type === 'koa') {
-
+    if (initialState.options.framework === 'koa') {
       return (ctx, next) => {
-        let universalCtx = new KoaContext(ctx);
+        let universalCtx = new KoaContext(ctx)
         const currentState = ERMOperation.deserializeRequest(universalCtx)
 
         return transformation(currentState, ctx)
@@ -50,13 +50,11 @@ class Transformation {
 
             return next()
           })
-      };
-
-    } else {
+      }
+    } else {  // Express
       const errorHandler = require('./errorHandler')(initialState.options)
-
       return (req, res, next) => {
-        let universalCtx = new ExpressContext({request:req,response:res});
+        let universalCtx = new ExpressContext(req, res)
         const currentState = ERMOperation.deserializeRequest(universalCtx)
 
         transformation(currentState, universalCtx)
@@ -69,9 +67,7 @@ class Transformation {
           .catch(errorHandler(req, res, next))
       }
     }
-
   }
-
 }
 
 /**

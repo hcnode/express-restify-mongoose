@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 /**
  * Add success() method to koa context.
@@ -11,9 +11,9 @@
 module.exports = function () {
   return function outputFn (ctx, next) {
     if (ctx.state.erm.result) {
-      ctx.body = ctx.state.erm.result;
+      ctx.body = ctx.state.erm.result
     }
-    ctx.status = ctx.state.erm.statusCode || 200;
-    return next();
+    ctx.status = ctx.state.erm.statusCode || 200
+    return next()
   }
-};
+}
