@@ -39,7 +39,7 @@ const restify = function (app, model, opts = {}) {
   const getContext = require('./api/getContext')
   const filterRequestBody = require('./api/filterRequestBody')
 
-  const middlewarePath = (options.framework === 'koa') ? './koa/' : './middleware'
+  const middlewarePath = (options.framework === 'koa') ? './koa/' : './middleware/'
 
   const access = require(middlewarePath + 'access')
   const ensureContentType = require(middlewarePath + 'ensureContentType')(options)
