@@ -60,7 +60,7 @@ class Transformation {
         transformation(currentState, universalCtx)
           .then(resultState => {
             // Add the result to the request object for the next middleware in the stack
-            _.merge(universalCtx.request, resultState.serializeToRequest())
+            _.merge(universalCtx.ermHost, resultState.serializeToRequest())
 
             return next()
           })

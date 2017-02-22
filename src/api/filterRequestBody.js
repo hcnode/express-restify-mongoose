@@ -22,7 +22,8 @@ function filterRequestBody (state, ctx) {
   // Ideally, we don't mutate the request body.
   ctx.requestBody = filteredObject
 
-  return Promise.resolve(state.set('body', filteredObject))
+  let p = state.set('body', filteredObject)
+  return Promise.resolve(p)
 }
 
 module.exports = new Transformation(filterRequestBody)

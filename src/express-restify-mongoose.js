@@ -127,7 +127,7 @@ const restify = function (app, model, opts = {}) {
     }
 
     router.use((req, res, next) => {
-      // At the start of each request, add our initial operation state
+      // At the start of each request, add our initial operation state, to be stored in req.erm and req._erm
       _.merge(req, initialOperationState.serializeToRequest())
       next()
     })
