@@ -37,6 +37,10 @@ class KoaContext extends Context {
     return this._ctx.state
   }
 
+  get params () {
+    return this._ctx.params
+  }
+
 }
 
 class ExpressContext extends Context {
@@ -55,6 +59,10 @@ class ExpressContext extends Context {
 
   get ermHost () {
     return this._ctx.request
+  }
+
+  get params () {
+    return this._ctx.request.params
   }
 
 }
