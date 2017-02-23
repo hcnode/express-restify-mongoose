@@ -25,8 +25,6 @@ function createObject (state) {
       return state
         .set('result', newDocument)
         .set('statusCode', 201)
-    }, (err) => {
-      return Promise.reject(err)
     })
 }
 

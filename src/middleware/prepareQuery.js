@@ -10,7 +10,7 @@ module.exports = function (options) {
   return function (req, res, next) {
     prepareQueryAsPromise(req.query)
       .then((queryOptions) => {
-        req._erm = req._erm ? req._erm : {}
+        req._erm = req._erm || {}
         req._erm.queryOptions = queryOptions
         return next()
       })
