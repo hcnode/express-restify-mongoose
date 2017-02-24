@@ -25,7 +25,8 @@ module.exports = function (createFn, setup, dismantle) {
 
           erm.serve(app, db.models.Customer, {
             findOneAndRemove: true,
-            restify: app.isRestify
+            restify: app.isRestify,
+            koa: app.ermKoa
           })
 
           db.models.Customer.create([{

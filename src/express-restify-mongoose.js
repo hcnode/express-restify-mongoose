@@ -39,7 +39,7 @@ const restify = function (app, model, opts = {}) {
   const getContext = require('./api/getContext')
   const filterRequestBody = require('./api/filterRequestBody')
 
-  const middlewarePath = (options.framework === 'koa') ? './koa/' : './middleware/'
+  const middlewarePath = options.koa ? './koa/' : './middleware/'
 
   const access = require(middlewarePath + 'access')
   const ensureContentType = require(middlewarePath + 'ensureContentType')(options)
@@ -106,9 +106,13 @@ const restify = function (app, model, opts = {}) {
     app.delete = app.del
   }
 
-  let router = options.router ? options.router : app
+  let router = app
 
-  if (options.framework === 'koa') { // koa2
+  if (options.koa) { // koa2
+    router = options.koa.router
+    if (!router) {
+      throw new Error('Koa applications must set options.koa.router')
+    }
     router.use((ctx, next) => {
       // At the start of each request, add our initial operation state
       _.merge(ctx.state, initialOperationState.serializeToRequest())
@@ -127,7 +131,8 @@ const restify = function (app, model, opts = {}) {
     }
 
     router.use((req, res, next) => {
-      // At the start of each request, add our initial operation state, to be stored in req.erm and req._erm
+      // At the start of each request, add our initial operation state, to be stored in req.erm and
+      // req._erm
       _.merge(req, initialOperationState.serializeToRequest())
       next()
     })

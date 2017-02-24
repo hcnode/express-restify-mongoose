@@ -1,9 +1,12 @@
 'use strict'
 
-const compose = require('koa-compose')
 const getPostMiddlewareForMethod = require('../api/shared').getPostMiddlewareForMethod
 
 module.exports = function (options, excludedMap) {
+  const compose = options.koa ? options.koa.compose : undefined
+  if (!compose) {
+    throw new Error('Koa applications must set options.koa.compose to koa-compose module')
+  }
   return function prepareOutput (ctx, next) {
     let postMiddleware = getPostMiddlewareForMethod(options, ctx.method, ctx.state.erm.statusCode) || []
 
@@ -40,7 +43,11 @@ module.exports = function (options, excludedMap) {
         return promiseOutputFn(ctx)
       })
       .then((resp) => {
-        return options.postProcess ? compose(options.postProcess)(ctx) : Promise.resolve()
+        if (options.postProcess && options.koa.compose) {
+          return compose(options.postProcess)(ctx)
+        } else {
+          return Promise.resolve()
+        }
       })
       .then((resp) => {
         return next()

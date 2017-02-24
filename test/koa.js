@@ -1,25 +1,28 @@
 const Koa = require('koa')
 const bodyParser = require('koa-bodyparser')
 const Router = require('koa-router')
-const methodOverride = require('method-override')
+const compose = require('koa-compose')
 
 const createTests = require('./integration/create')
-const readTests = require('./integration/read')
-const updateTests = require('./integration/update')
-const deleteTests = require('./integration/delete')
-const accessTests = require('./integration/access')
-const contextFilterTests = require('./integration/contextFilter')
-const hookTests = require('./integration/hooks')
-const middlewareTests = require('./integration/middleware')
-const optionsTests = require('./integration/options')
-const virtualsTests = require('./integration/virtuals')
+// const readTests = require('./integration/read')
+// const updateTests = require('./integration/update')
+// const deleteTests = require('./integration/delete')
+// const accessTests = require('./integration/access')
+// const contextFilterTests = require('./integration/contextFilter')
+// const hookTests = require('./integration/hooks')
+// const middlewareTests = require('./integration/middleware')
+// const optionsTests = require('./integration/options')
+// const virtualsTests = require('./integration/virtuals')
 
 const db = require('./integration/setup')()
 
 function KoaApp () {
   let app = new Koa()
   app.use(bodyParser({ enableTypes: ['json'], strict: true }))
-  app.router = new Router()
+  app.ermKoa = {
+    router: new Router(),
+    compose: compose
+  }
   return app
 }
 
