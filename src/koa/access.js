@@ -8,14 +8,14 @@ module.exports = function (options) {
           if (['public', 'private', 'protected'].indexOf(access) < 0) {
             return Promise.reject(new Error('Unsupported access, must be "private", "protected" or "public"'))
           }
-          ctx.state.erm.access = access
+          ctx.state._erm.access = access
           return next()
         })
     } else if (Array.isArray(options.access)) {
-      ctx.state.erm.access = options.access
+      ctx.state._erm.access = options.access
       return next()
     } else {
-      ctx.state.erm.access = []
+      ctx.state._erm.access = []
       return next()
     }
   }

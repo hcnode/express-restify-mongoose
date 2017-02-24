@@ -2,7 +2,7 @@ const Promise = require('bluebird')
 
 /**
  * Returns Express middleware that calls the "access" function in options and adds the result to
- * the request object (as "req.access")
+ * the request object (as "req._erm.access")
  *
  * The access function in options ("options.access") gets passed the request.
  *
@@ -25,7 +25,7 @@ module.exports = function (options) {
           return Promise.reject(new Error('Unsupported access, must be "private", "protected" or "public"'))
         }
 
-        req.access = access
+        req._erm.access = access
         return next()
       })
       .catch(err => {

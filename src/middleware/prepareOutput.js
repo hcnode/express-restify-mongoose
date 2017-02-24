@@ -20,10 +20,10 @@ module.exports = function (options, excludedMap) {
         // TODO: this will, but should not, filter /count queries
         if (req.erm.result && options.filter) {
           let opts = {
-            access: req.access,
+            access: req._erm.access,
             excludedMap: excludedMap,
-            populate: req._ermQueryOptions
-              ? req._ermQueryOptions.populate
+            populate: req._erm.queryOptions
+              ? req._erm.queryOptions.populate
               : null
           }
 

@@ -11,7 +11,7 @@ module.exports = function (createFn, setup, dismantle) {
   let invalidId = 'invalid-id'
   let randomId = mongoose.Types.ObjectId().toHexString()
 
-  describe('Create documents', () => {
+  describe.skip('Create documents', () => {
     let app = createFn()
     let server
     let customer, product

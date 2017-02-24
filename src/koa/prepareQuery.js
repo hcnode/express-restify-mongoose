@@ -6,7 +6,7 @@ module.exports = function (options) {
   return function (ctx, next) {
     prepareQueryAsPromise(ctx.request.query)
       .then(queryOptions => {
-        ctx.state.erm.queryOptions = queryOptions
+        ctx.state._erm.queryOptions = queryOptions
         return next()
       })
   }
