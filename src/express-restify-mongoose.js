@@ -24,14 +24,6 @@ function getDefaults () {
   })
 }
 
-function ensureValueIsArray (value) {
-  if (_.isArray(value)) {
-    return value
-  }
-
-  return value ? [value] : []
-}
-
 const restify = function (app, model, opts = {}) {
   let options = {}
   _.assign(options, getDefaults(), opts)
@@ -80,6 +72,13 @@ const restify = function (app, model, opts = {}) {
 
   excludedMap[model.modelName] = options.filter.filteredKeys
 
+  function ensureValueIsArray (value) {
+    if (!_.isArray(value)) {
+      value = value ? [value] : []
+    }
+    return (typeof options.compose === 'function') ? options.compose(value) : value
+  }
+
   options.preMiddleware = ensureValueIsArray(options.preMiddleware)
   options.preCreate = ensureValueIsArray(options.preCreate)
   options.preRead = ensureValueIsArray(options.preRead)
@@ -106,22 +105,17 @@ const restify = function (app, model, opts = {}) {
     app.delete = app.del
   }
 
-  let router = app
-
   if (options.koa) { // koa2
-    router = options.koa.router
-    if (!router) {
-      throw new Error('Koa applications must set options.koa.router')
-    }
-    router.use((ctx, next) => {
+    app.use((ctx, next) => {
       // At the start of each request, add our initial operation state
       _.merge(ctx.state, initialOperationState.serializeToRequest())
       return next()
     })
 
+    // With koa, onError is the first middleware and handles promise rejections
     const onError = options.onError ? options.onError : require('./koa/onError')(options)
-    router.use(onError)
-  } else {    // Express
+    app.use(onError)
+  } else {    // Express and Restify
     if (!options.onError) {
       options.onError = onError(!options.restify)
     }
@@ -130,7 +124,7 @@ const restify = function (app, model, opts = {}) {
       options.outputFn = outputFn(!options.restify)
     }
 
-    router.use((req, res, next) => {
+    app.use((req, res, next) => {
       // At the start of each request, add our initial operation state, to be stored in req.erm and
       // req._erm
       _.merge(req, initialOperationState.serializeToRequest())
@@ -138,7 +132,7 @@ const restify = function (app, model, opts = {}) {
     })
   }
 
-  const accessMiddleware = options.access ? access(options) : []
+  const accessMiddleware = options.access ? access(options) : ensureValueIsArray([])
   const contextMiddleware = getContext.getMiddleware(initialOperationState)
   const filterBodyMiddleware = filterRequestBody.getMiddleware(initialOperationState)
 
@@ -152,25 +146,25 @@ const restify = function (app, model, opts = {}) {
 
   // Retrieval
 
-  router.get(
+  app.get(
     restPaths.allDocuments, prepareQuery, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getItems,
     prepareOutput
   )
 
-  router.get(
+  app.get(
     restPaths.allDocumentsCount, prepareQuery, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getCount,
     prepareOutput
   )
 
-  router.get(
+  app.get(
     restPaths.singleDocument, prepareQuery, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getItem,
     prepareOutput
   )
 
-  router.get(
+  app.get(
     restPaths.singleDocumentShallow, prepareQuery, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getShallow,
     prepareOutput
@@ -178,7 +172,7 @@ const restify = function (app, model, opts = {}) {
 
   // Creation
 
-  router.post(
+  app.post(
     restPaths.allDocuments, prepareQuery, ensureContentType, options.preMiddleware,
     options.preCreate, accessMiddleware, filterBodyMiddleware, ops.createObject,
     prepareOutput
@@ -186,7 +180,7 @@ const restify = function (app, model, opts = {}) {
 
   // Modification
 
-  router.post(
+  app.post(
     restPaths.singleDocument,
     deprecatePrepareQuery('the POST method to update resources will be removed.'),
     ensureContentType, options.preMiddleware, contextMiddleware,
@@ -194,7 +188,7 @@ const restify = function (app, model, opts = {}) {
     prepareOutput
   )
 
-  router.put(
+  app.put(
     restPaths.singleDocument,
     deprecatePrepareQuery(`the PUT method will replace rather than update a resource.`),
     ensureContentType, options.preMiddleware, contextMiddleware,
@@ -202,7 +196,7 @@ const restify = function (app, model, opts = {}) {
     prepareOutput
   )
 
-  router.patch(
+  app.patch(
     restPaths.singleDocument,
     prepareQuery, ensureContentType, options.preMiddleware, contextMiddleware,
     options.preUpdate, accessMiddleware, filterBodyMiddleware, ops.modifyObject,
@@ -211,14 +205,14 @@ const restify = function (app, model, opts = {}) {
 
   // Deletion
 
-  router.delete(
+  app.delete(
     restPaths.allDocuments,
     prepareQuery, options.preMiddleware, contextMiddleware,
     options.preDelete, ops.deleteItems,
     prepareOutput
   )
 
-  router.delete(
+  app.delete(
     restPaths.singleDocument,
     prepareQuery, options.preMiddleware, contextMiddleware,
     options.preDelete, ops.deleteItem,

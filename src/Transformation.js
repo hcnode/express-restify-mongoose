@@ -38,7 +38,7 @@ class Transformation {
   getMiddleware (initialState) {
     const transformation = privates.get(this)
 
-    if (initialState.options.framework === 'koa') {
+    if (initialState.options.koa) {
       return (ctx, next) => {
         let universalCtx = new KoaContext(ctx)
         const currentState = ERMOperation.deserializeRequest(universalCtx)

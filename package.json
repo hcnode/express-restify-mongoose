@@ -70,9 +70,11 @@
     "test-unit": "mocha --compilers js:babel-core/register -R spec ./test/unit.js",
     "test-filter": "mocha -R spec ./test/integration/resource_filter.js --compilers js:babel-core/register --timeout 10s",
     "test-express": "mocha -R spec ./test/express.js --compilers js:babel-core/register --timeout 10s",
+    "test-koa": "mocha -R spec ./test/koa.js --compilers js:babel-core/register --timeout 10s",
     "test-restify": "mocha -R spec ./test/restify.js --compilers js:babel-core/register --timeout 10s",
     "test-cov-unit": "istanbul cover node_modules/mocha/bin/_mocha -- --compilers js:babel-core/register -R spec ./test/unit.js",
     "test-cov-express": "istanbul cover node_modules/mocha/bin/_mocha -- --compilers js:babel-core/register -R spec ./test/express.js --timeout 10s",
+    "test-cov-koa": "istanbul cover node_modules/mocha/bin/_mocha -- --compilers js:babel-core/register -R spec ./test/koa.js --timeout 10s",
     "test-cov-restify": "istanbul cover node_modules/mocha/bin/_mocha -- --compilers js:babel-core/register -R spec ./test/restify.js --timeout 10s",
     "report-coverage": "cat ./coverage/lcov.info | coveralls"
   },

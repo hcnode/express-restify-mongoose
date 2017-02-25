@@ -19,11 +19,11 @@ const db = require('./integration/setup')()
 function KoaApp () {
   let app = new Koa()
   app.use(bodyParser({ enableTypes: ['json'], strict: true }))
-  app.ermKoa = {
-    router: new Router(),
-    compose: compose
-  }
-  return app
+  let router = new Router()
+  router.compose = compose
+  router.isKoa = true
+  app.use(router.routes(), router.allowedMethods())
+  return router
 }
 
 function setup (callback) {

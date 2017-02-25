@@ -3,14 +3,13 @@
 const getPostMiddlewareForMethod = require('../api/shared').getPostMiddlewareForMethod
 
 module.exports = function (options, excludedMap) {
-  const compose = options.koa ? options.koa.compose : undefined
-  if (!compose) {
-    throw new Error('Koa applications must set options.koa.compose to koa-compose module')
+  if (!options.compose) {
+    throw new Error('Koa applications must set options.compose to koa-compose module')
   }
   return function prepareOutput (ctx, next) {
     let postMiddleware = getPostMiddlewareForMethod(options, ctx.method, ctx.state.erm.statusCode) || []
 
-    return compose(postMiddleware)(ctx)
+    return options.compose(postMiddleware)(ctx)
       .then(() => {
         // TODO: this will, but should not, filter /count queries
         if (ctx.state.erm.result && options.filter) {
@@ -43,8 +42,8 @@ module.exports = function (options, excludedMap) {
         return promiseOutputFn(ctx)
       })
       .then((resp) => {
-        if (options.postProcess && options.koa.compose) {
-          return compose(options.postProcess)(ctx)
+        if (options.postProcess) {
+          return options.compose(options.postProcess)(ctx)
         } else {
           return Promise.resolve()
         }

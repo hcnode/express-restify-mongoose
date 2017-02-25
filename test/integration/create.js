@@ -11,7 +11,7 @@ module.exports = function (createFn, setup, dismantle) {
   let invalidId = 'invalid-id'
   let randomId = mongoose.Types.ObjectId().toHexString()
 
-  describe.skip('Create documents', () => {
+  describe('Create documents', () => {
     let app = createFn()
     let server
     let customer, product
@@ -24,17 +24,20 @@ module.exports = function (createFn, setup, dismantle) {
 
         erm.serve(app, db.models.Customer, {
           restify: app.isRestify,
-          koa: app.ermKoa
+          compose: app.compose,
+          koa: app.isKoa
         })
 
         erm.serve(app, db.models.Invoice, {
           restify: app.isRestify,
-          koa: app.ermKoa
+          compose: app.compose,
+          koa: app.isKoa
         })
 
         erm.serve(app, db.models.Product, {
           restify: app.isRestify,
-          koa: app.ermKoa
+          compose: app.compose,
+          koa: app.isKoa
         })
 
         db.models.Customer.create({
