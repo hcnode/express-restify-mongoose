@@ -1,3 +1,5 @@
+'use strict'
+
 const Koa = require('koa')
 const bodyParser = require('koa-bodyparser')
 const Router = require('koa-router')
@@ -20,10 +22,11 @@ function KoaApp () {
   let app = new Koa()
   app.use(bodyParser({ enableTypes: ['json'], strict: true }))
   let router = new Router()
-  router.compose = compose
-  router.isKoa = true
+  app.ermTestRouter = router
+  app.ermTestCompose = compose
+  app.ermTestIsKoa = true
   app.use(router.routes(), router.allowedMethods())
-  return router
+  return app
 }
 
 function setup (callback) {
