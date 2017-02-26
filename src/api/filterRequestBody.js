@@ -1,3 +1,4 @@
+const debug = require('debug')('erm:api')
 const Transformation = require('../Transformation').Transformation
 const Promise = require('bluebird')
 
@@ -9,6 +10,8 @@ function filterRequestBody (state, ctx) {
       populate: state.query.populate
     }
   )
+
+  debug(`filterRequestBody`)
 
   if (state.model.schema.options._id) {
     delete filteredObject._id
@@ -22,8 +25,7 @@ function filterRequestBody (state, ctx) {
   // Ideally, we don't mutate the request body.
   ctx.requestBody = filteredObject
 
-  let p = state.set('body', filteredObject)
-  return Promise.resolve(p)
+  return Promise.resolve(state.set('body', filteredObject))
 }
 
 module.exports = new Transformation(filterRequestBody)

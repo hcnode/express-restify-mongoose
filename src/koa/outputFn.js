@@ -9,11 +9,11 @@
  */
 
 module.exports = function () {
-  return function outputFn (ctx, next) {
+  return function outputFn (ctx) {
     if (ctx.state.erm.result) {
       ctx.body = ctx.state.erm.result
     }
     ctx.status = ctx.state.erm.statusCode || 200
-    return next()
+    return Promise.resolve()
   }
 }

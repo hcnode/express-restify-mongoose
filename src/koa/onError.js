@@ -1,4 +1,5 @@
 'use strict'
+const debug = require('debug')('erm:koa')
 const http = require('http')
 const serializeError = require('serialize-error')
 
@@ -11,10 +12,13 @@ const serializeError = require('serialize-error')
  */
 module.exports = function (options) {
   return function onError (ctx, next) {
+    debug(`onError request`)
     return next()
       .then(() => {
+        debug(`onError response no error`)
         return Promise.resolve()
       }, (err) => {
+        debug(`onError response error ${err}`)
         const serializedErr = serializeError(err)
         delete serializedErr.stack
 

@@ -1,8 +1,10 @@
 'use strict'
+const debug = require('debug')('erm:koa')
 
 module.exports = function (options) {
   return function ensureContentType (ctx, next) {
     const ct = ctx.request.headers['content-type']
+    debug(`ensureContentType for '${ct}'`)
     if (!ct) {
       return Promise.reject(new Error('missing_content_type'))
     }

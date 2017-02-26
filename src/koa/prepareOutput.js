@@ -1,5 +1,6 @@
 'use strict'
 
+const debug = require('debug')('erm:koa')
 const getPostMiddlewareForMethod = require('../api/shared').getPostMiddlewareForMethod
 
 module.exports = function (options, excludedMap) {
@@ -7,9 +8,17 @@ module.exports = function (options, excludedMap) {
     throw new Error('Koa applications must set options.compose to koa-compose module')
   }
   return function prepareOutput (ctx, next) {
-    let postMiddleware = getPostMiddlewareForMethod(options, ctx.method, ctx.state.erm.statusCode) || []
+    debug('prepareOutput')
+    const postMiddleware = getPostMiddlewareForMethod(options, ctx.method, ctx.state.erm.statusCode)
 
-    return options.compose(postMiddleware)(ctx)
+    return Promise.resolve()
+      .then((resp) => {
+        if (postMiddleware) {
+          return postMiddleware(ctx)
+        } else {
+          return Promise.resolve()
+        }
+      })
       .then(() => {
         // TODO: this will, but should not, filter /count queries
         if (ctx.state.erm.result && options.filter) {
@@ -31,18 +40,11 @@ module.exports = function (options, excludedMap) {
           ctx.response.header[headerName] = ctx.state.erm.totalCount
         }
 
-        let promiseOutputFn = options.outputFn
-        if (options.outputFn.length < 2) {
-          promiseOutputFn = function (ctx) {
-            options.outputFn(ctx)
-            return Promise.resolve()
-          }
-        }
-
-        return promiseOutputFn(ctx)
+        return options.outputFn(ctx)
       })
       .then((resp) => {
         if (options.postProcess) {
+          debug('postProcess')
           return options.compose(options.postProcess)(ctx)
         } else {
           return Promise.resolve()
@@ -50,6 +52,13 @@ module.exports = function (options, excludedMap) {
       })
       .then((resp) => {
         return next()
+      })
+      .then((resp) => {
+        debug('prepareOutput done')
+        return Promise.resolve(resp)
+      }, (err) => {
+        debug('prepareOutput err')
+        return Promise.reject(err)
       })
   }
 }

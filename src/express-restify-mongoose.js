@@ -1,5 +1,6 @@
 const util = require('util')
 const _ = require('lodash')
+const debug = require('debug')('erm:app')
 
 const Filter = require('./resource_filter')
 const RESTPathGenerator = require('./RESTPathGenerator')
@@ -105,10 +106,15 @@ const restify = function (app, model, opts = {}) {
     app.delete = app.del
   }
 
+  if (!options.outputFn) {
+    options.outputFn = outputFn(!options.restify)
+  }
+
   if (options.koa) { // koa2
     app.use((ctx, next) => {
       // At the start of each request, add our initial operation state to be stored in ctx.erm and ctx._erm
       _.merge(ctx.state, initialOperationState.serializeToRequest())
+      debug('initialize context state')
       return next()
     })
 
@@ -118,10 +124,6 @@ const restify = function (app, model, opts = {}) {
   } else {    // Express and Restify
     if (!options.onError) {
       options.onError = onError(!options.restify)
-    }
-
-    if (!options.outputFn) {
-      options.outputFn = outputFn(!options.restify)
     }
 
     app.use((req, res, next) => {

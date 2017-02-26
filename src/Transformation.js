@@ -22,8 +22,8 @@ class Transformation {
   }
 
   /**
-   * Given an initial ERMOperation (to grab options from), returns Express middleware that does
-   * the following:
+   * Given an initial ERMOperation (to grab options from), returns middleware that does the
+   * following:
    *  - Deserialize the current ERMOperation state from the request
    *  - Run the transformation (using the request)
    *  - Serialize the resultant ERMOperation back to the request
@@ -43,11 +43,10 @@ class Transformation {
         let universalCtx = new KoaContext(ctx)
         const currentState = ERMOperation.deserializeRequest(universalCtx)
 
-        return transformation(currentState, ctx)
+        return transformation(currentState, universalCtx)
           .then((resultState) => {
             // Add the result to the request object for the next middleware in the stack
-            _.merge(universalCtx.state, resultState.serializeToRequest())
-
+            _.merge(universalCtx.ermHost, resultState.serializeToRequest())
             return next()
           })
       }
