@@ -1,4 +1,5 @@
 const Promise = require('bluebird')
+const debug = require('debug')('erm:middleware')
 
 /**
  * Returns Express middleware that calls the "access" function in options and adds the result to
@@ -26,6 +27,7 @@ module.exports = function (options) {
         }
 
         req._erm.access = access
+        debug('%s access \'%s\'', req.reqId, access)
         return next()
       })
       .catch(err => {

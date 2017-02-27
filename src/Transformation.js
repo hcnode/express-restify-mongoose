@@ -4,6 +4,7 @@ const Context = require('./Context')
 const ExpressContext = Context.ExpressContext
 const KoaContext = Context.KoaContext
 const privates = new WeakMap()
+const debug = require('debug')('erm:api')
 
 /**
  * An Transformation is a Promise-based operation that accepts an ERMOperation and a Express
@@ -39,7 +40,8 @@ class Transformation {
     const transformation = privates.get(this)
 
     if (initialState.options.koa) {
-      return (ctx, next) => {
+      return function transform(ctx, next) {
+        debug( '%s %s', ctx.reqId, transformation.name )
         let universalCtx = new KoaContext(ctx)
         const currentState = ERMOperation.deserializeRequest(universalCtx)
 

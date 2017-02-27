@@ -34,7 +34,7 @@ module.exports = function (options) {
         return Promise.reject(new Error('Unsupported access, must be "private", "protected" or "public"'))
       }
       ctx.state._erm.access = access
-      debug('%s access %s', ctx.reqId, access)
+      debug('%s access \'%s\'', ctx.reqId, access)
       return next()
     })
   }

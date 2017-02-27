@@ -2,12 +2,14 @@
 
 const PrepareQueryAsPromise = require('../api/prepareQuery')
 const ErrorHandler = require('../errorHandler')
+const debug = require('debug')('erm:middleware')
 
 module.exports = function (options) {
   const prepareQueryAsPromise = PrepareQueryAsPromise(options.allowRegex)
   const errorHandler = ErrorHandler(options)
 
   return function (req, res, next) {
+    debug('%s prepareQuery %s', req.reqId, JSON.stringify(req.query))
     prepareQueryAsPromise(req.query)
       .then((queryOptions) => {
         req._erm = req._erm || {}

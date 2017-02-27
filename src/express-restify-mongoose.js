@@ -112,7 +112,7 @@ const restify = function (app, model, opts = {}) {
   }
 
   if (options.koa) { // koa2
-    app.use(function initializeState(ctx, next) {
+    app.use(function ermInit(ctx, next) {
       // At the start of each request, add our initial operation state to be stored in ctx.erm and
       // ctx._erm
       _.merge(ctx.state, initialOperationState.serializeToRequest())
@@ -129,10 +129,12 @@ const restify = function (app, model, opts = {}) {
       options.onError = onError(!options.restify)
     }
 
-    app.use((req, res, next) => {
+    app.use( (req, res, next) => {
       // At the start of each request, add our initial operation state, to be stored in req.erm and
       // req._erm
       _.merge(req, initialOperationState.serializeToRequest())
+      req.reqId = (++reqId)
+      debug('%s initialize context state', req.reqId)
       next()
     })
   }

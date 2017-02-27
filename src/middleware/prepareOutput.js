@@ -2,11 +2,13 @@ const _ = require('lodash')
 const async = require('async')
 const Promise = require('bluebird')
 const getPostMiddlewareForMethod = require('../api/shared').getPostMiddlewareForMethod
+const debug = require('debug')('erm:middleware')
 
 module.exports = function (options, excludedMap) {
   const errorHandler = require('../errorHandler')(options)
 
   return function (req, res, next) {
+    debug(req.reqId + ' prepareOutput')
     const postMiddleware = getPostMiddlewareForMethod(options, req.method, req.erm.statusCode) || []
 
     async.eachSeries(
