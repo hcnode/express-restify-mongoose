@@ -4,6 +4,7 @@ const Koa = require('koa')
 const bodyParser = require('koa-bodyparser')
 const Router = require('koa-router')
 const compose = require('koa-compose')
+const qs = require('koa-qs')
 
 const createTests = require('./integration/create')
 const readTests = require('./integration/read')
@@ -21,6 +22,8 @@ const db = require('./integration/setup')()
 function KoaApp () {
   let app = new Koa()
   app.use(bodyParser({ enableTypes: ['json'], strict: true }))
+  // Must use koa-qs with koa to parse nested queries
+  qs(app)
   let router = new Router()
   app.ermTestRouter = router
   app.ermTestCompose = compose

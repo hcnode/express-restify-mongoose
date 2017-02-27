@@ -112,7 +112,7 @@ const restify = function (app, model, opts = {}) {
   }
 
   if (options.koa) { // koa2
-    app.use((ctx, next) => {
+    app.use(function initializeState(ctx, next) {
       // At the start of each request, add our initial operation state to be stored in ctx.erm and
       // ctx._erm
       _.merge(ctx.state, initialOperationState.serializeToRequest())
