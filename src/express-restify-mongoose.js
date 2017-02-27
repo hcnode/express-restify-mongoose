@@ -8,6 +8,7 @@ const ERMOperation = require('./ERMOperation')
 
 let customDefaults = null
 let excludedMap = {}
+let reqId = 0
 
 function getDefaults () {
   return _.defaults(_.clone(customDefaults) || {}, {
@@ -112,9 +113,11 @@ const restify = function (app, model, opts = {}) {
 
   if (options.koa) { // koa2
     app.use((ctx, next) => {
-      // At the start of each request, add our initial operation state to be stored in ctx.erm and ctx._erm
+      // At the start of each request, add our initial operation state to be stored in ctx.erm and
+      // ctx._erm
       _.merge(ctx.state, initialOperationState.serializeToRequest())
-      debug('initialize context state')
+      ctx.reqId = (++reqId)
+      debug('%s initialize context state', ctx.reqId)
       return next()
     })
 

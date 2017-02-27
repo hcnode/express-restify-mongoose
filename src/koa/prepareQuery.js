@@ -5,7 +5,7 @@ module.exports = function (options) {
   const prepareQueryAsPromise = require('../api/prepareQuery')(options.allowRegex)
 
   return function (ctx, next) {
-    debug('prepareQuery %s', JSON.stringify(ctx.request.query))
+    debug('%s prepareQuery %s', ctx.reqId, JSON.stringify(ctx.request.query))
     return prepareQueryAsPromise(ctx.request.query)
       .then(queryOptions => {
         ctx.state._erm.queryOptions = queryOptions

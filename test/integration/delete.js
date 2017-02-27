@@ -14,6 +14,7 @@ module.exports = function (createFn, setup, dismantle) {
   describe('Delete documents', () => {
     describe('findOneAndRemove: true', () => {
       let app = createFn()
+      let router = app.ermTestRouter || app
       let server
       let customer
 
@@ -23,10 +24,11 @@ module.exports = function (createFn, setup, dismantle) {
             return done(err)
           }
 
-          erm.serve(app, db.models.Customer, {
+          erm.serve(router, db.models.Customer, {
             findOneAndRemove: true,
             restify: app.isRestify,
-            koa: app.ermKoa
+            compose: app.ermTestCompose,
+            koa: app.ermTestIsKoa
           })
 
           db.models.Customer.create([{
@@ -115,6 +117,7 @@ module.exports = function (createFn, setup, dismantle) {
 
     describe('findOneAndRemove: false', () => {
       let app = createFn()
+      let router = app.ermTestRouter || app
       let server
       let customer
 
@@ -124,9 +127,11 @@ module.exports = function (createFn, setup, dismantle) {
             return done(err)
           }
 
-          erm.serve(app, db.models.Customer, {
+          erm.serve(router, db.models.Customer, {
             findOneAndRemove: false,
-            restify: app.isRestify
+            restify: app.isRestify,
+            compose: app.ermTestCompose,
+            koa: app.ermTestIsKoa
           })
 
           db.models.Customer.create([{

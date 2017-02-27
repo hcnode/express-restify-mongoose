@@ -8,7 +8,7 @@ module.exports = function (options, excludedMap) {
     throw new Error('Koa applications must set options.compose to koa-compose module')
   }
   return function prepareOutput (ctx, next) {
-    debug('prepareOutput')
+    debug(ctx.reqId + ' prepareOutput')
     const postMiddleware = getPostMiddlewareForMethod(options, ctx.method, ctx.state.erm.statusCode)
 
     return Promise.resolve()
@@ -44,21 +44,10 @@ module.exports = function (options, excludedMap) {
       })
       .then((resp) => {
         if (options.postProcess) {
-          debug('postProcess')
           return options.compose(options.postProcess)(ctx)
         } else {
           return Promise.resolve()
         }
-      })
-      .then((resp) => {
-        return next()
-      })
-      .then((resp) => {
-        debug('prepareOutput done')
-        return Promise.resolve(resp)
-      }, (err) => {
-        debug('prepareOutput err')
-        return Promise.reject(err)
       })
   }
 }

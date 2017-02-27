@@ -15,6 +15,7 @@ module.exports = function (createFn, setup, dismantle) {
   describe('Update documents', () => {
     describe('findOneAndUpdate: true', () => {
       let app = createFn()
+      let router = app.ermTestRouter || app
       let server
       let customers
       let products
@@ -26,14 +27,18 @@ module.exports = function (createFn, setup, dismantle) {
             return done(err)
           }
 
-          erm.serve(app, db.models.Customer, {
+          erm.serve(router, db.models.Customer, {
             findOneAndUpdate: true,
-            restify: app.isRestify
+            restify: app.isRestify,
+            compose: app.ermTestCompose,
+            koa: app.ermTestIsKoa
           })
 
-          erm.serve(app, db.models.Invoice, {
+          erm.serve(router, db.models.Invoice, {
             findOneAndUpdate: true,
-            restify: app.isRestify
+            restify: app.isRestify,
+            compose: app.ermTestCompose,
+            koa: app.ermTestIsKoa
           })
 
           db.models.Customer.create([{
@@ -400,6 +405,7 @@ module.exports = function (createFn, setup, dismantle) {
 
     describe('findOneAndUpdate: false', () => {
       let app = createFn()
+      let router = app.ermTestRouter || app
       let server
       let customers
       let products
@@ -411,14 +417,18 @@ module.exports = function (createFn, setup, dismantle) {
             return done(err)
           }
 
-          erm.serve(app, db.models.Customer, {
+          erm.serve(router, db.models.Customer, {
             findOneAndUpdate: false,
-            restify: app.isRestify
+            restify: app.isRestify,
+            compose: app.ermTestCompose,
+            koa: app.ermTestIsKoa
           })
 
-          erm.serve(app, db.models.Invoice, {
+          erm.serve(router, db.models.Invoice, {
             findOneAndUpdate: false,
-            restify: app.isRestify
+            restify: app.isRestify,
+            compose: app.ermTestCompose,
+            koa: app.ermTestIsKoa
           })
 
           db.models.Customer.create([{

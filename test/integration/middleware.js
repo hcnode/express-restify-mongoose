@@ -15,6 +15,7 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('preMiddleware/Create/Read/Update/Delete - null', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let customer
 
@@ -24,13 +25,15 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, {
+        erm.serve(router, db.models.Customer, {
           preMiddleware: null,
           preCreate: null,
           preRead: null,
           preUpdate: null,
           preDelete: null,
-          restify: app.isRestify
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
         db.models.Customer.create({
@@ -101,13 +104,16 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('preMiddleware', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let customer
     let options = {
       preMiddleware: sinon.spy((req, res, next) => {
         next()
       }),
-      restify: app.isRestify
+      restify: app.isRestify,
+      compose: app.ermTestCompose,
+      koa: app.ermTestIsKoa
     }
 
     beforeEach((done) => {
@@ -116,7 +122,7 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, options)
+        erm.serve(router, db.models.Customer, options)
 
         db.models.Customer.create({
           name: 'Bob'
@@ -295,12 +301,15 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('preCreate', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let options = {
       preCreate: sinon.spy((req, res, next) => {
         next()
       }),
-      restify: app.isRestify
+      restify: app.isRestify,
+      compose: app.ermTestCompose,
+      koa: app.ermTestIsKoa
     }
 
     beforeEach((done) => {
@@ -309,7 +318,7 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, options)
+        erm.serve(router, db.models.Customer, options)
 
         server = app.listen(testPort, done)
       })
@@ -342,13 +351,16 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('preRead', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let customer
     let options = {
       preRead: sinon.spy((req, res, next) => {
         next()
       }),
-      restify: app.isRestify
+      restify: app.isRestify,
+      compose: app.ermTestCompose,
+      koa: app.ermTestIsKoa
     }
 
     beforeEach((done) => {
@@ -357,7 +369,7 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, options)
+        erm.serve(router, db.models.Customer, options)
 
         db.models.Customer.create({
           name: 'Bob'
@@ -446,13 +458,16 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('preUpdate', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let customer
     let options = {
       preUpdate: sinon.spy((req, res, next) => {
         next()
       }),
-      restify: app.isRestify
+      restify: app.isRestify,
+      compose: app.ermTestCompose,
+      koa: app.ermTestIsKoa
     }
 
     beforeEach((done) => {
@@ -461,7 +476,7 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, options)
+        erm.serve(router, db.models.Customer, options)
 
         db.models.Customer.create({
           name: 'Bob'
@@ -534,13 +549,16 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('preDelete', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let customer
     let options = {
       preDelete: sinon.spy((req, res, next) => {
         next()
       }),
-      restify: app.isRestify
+      restify: app.isRestify,
+      compose: app.ermTestCompose,
+      koa: app.ermTestIsKoa
     }
 
     beforeEach((done) => {
@@ -549,7 +567,7 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, options)
+        erm.serve(router, db.models.Customer, options)
 
         db.models.Customer.create({
           name: 'Bob'
@@ -604,6 +622,7 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('postCreate/Read/Update/Delete - null', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let customer
 
@@ -613,12 +632,14 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, {
+        erm.serve(router, db.models.Customer, {
           postCreate: null,
           postRead: null,
           postUpdate: null,
           postDelete: null,
-          restify: app.isRestify
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
         db.models.Customer.create({
@@ -689,12 +710,15 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('postCreate', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let options = {
       postCreate: sinon.spy((req, res, next) => {
         next()
       }),
-      restify: app.isRestify
+      restify: app.isRestify,
+      compose: app.ermTestCompose,
+      koa: app.ermTestIsKoa
     }
 
     beforeEach((done) => {
@@ -703,7 +727,7 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, options)
+        erm.serve(router, db.models.Customer, options)
 
         server = app.listen(testPort, done)
       })
@@ -767,13 +791,16 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('postRead', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let customer
     let options = {
       postRead: sinon.spy((req, res, next) => {
         next()
       }),
-      restify: app.isRestify
+      restify: app.isRestify,
+      compose: app.ermTestCompose,
+      koa: app.ermTestIsKoa
     }
 
     beforeEach((done) => {
@@ -782,7 +809,7 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, options)
+        erm.serve(router, db.models.Customer, options)
 
         db.models.Customer.create({
           name: 'Bob'
@@ -895,13 +922,16 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('postUpdate', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let customer
     let options = {
       postUpdate: sinon.spy((req, res, next) => {
         next()
       }),
-      restify: app.isRestify
+      restify: app.isRestify,
+      compose: app.ermTestCompose,
+      koa: app.ermTestIsKoa
     }
 
     beforeEach((done) => {
@@ -910,7 +940,7 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, options)
+        erm.serve(router, db.models.Customer, options)
 
         db.models.Customer.create({
           name: 'Bob'
@@ -1011,13 +1041,16 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('postDelete', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let customer
     let options = {
       postDelete: sinon.spy((req, res, next) => {
         next()
       }),
-      restify: app.isRestify
+      restify: app.isRestify,
+      compose: app.ermTestCompose,
+      koa: app.ermTestIsKoa
     }
 
     beforeEach((done) => {
@@ -1026,7 +1059,7 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, options)
+        erm.serve(router, db.models.Customer, options)
 
         db.models.Customer.create({
           name: 'Bob'
@@ -1105,13 +1138,16 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('postCreate yields an error', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let options = {
       postCreate: sinon.spy((req, res, next) => {
         next(new Error('Something went wrong'))
       }),
       postProcess: sinon.spy(),
-      restify: app.isRestify
+      restify: app.isRestify,
+      compose: app.ermTestCompose,
+      koa: app.ermTestIsKoa
     }
 
     beforeEach((done) => {
@@ -1120,7 +1156,7 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, options)
+        erm.serve(router, db.models.Customer, options)
 
         server = app.listen(testPort, done)
       })
@@ -1155,12 +1191,15 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('postProcess', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let options = {
       postProcess: sinon.spy((req, res, next) => {
         next()
       }),
-      restify: app.isRestify
+      restify: app.isRestify,
+      compose: app.ermTestCompose,
+      koa: app.ermTestIsKoa
     }
 
     beforeEach((done) => {
@@ -1169,7 +1208,7 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, options)
+        erm.serve(router, db.models.Customer, options)
 
         server = app.listen(testPort, done)
       })

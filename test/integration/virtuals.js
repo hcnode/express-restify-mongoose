@@ -11,6 +11,7 @@ module.exports = function (createFn, setup, dismantle) {
   describe('virtuals', () => {
     describe('lean: true', () => {
       let app = createFn()
+      let router = app.ermTestRouter || app
       let server
 
       beforeEach((done) => {
@@ -19,9 +20,11 @@ module.exports = function (createFn, setup, dismantle) {
             return done(err)
           }
 
-          erm.serve(app, db.models.Customer, {
+          erm.serve(router, db.models.Customer, {
             lean: true,
-            restify: app.isRestify
+            restify: app.isRestify,
+            compose: app.ermTestCompose,
+            koa: app.ermTestIsKoa
           })
 
           db.models.Customer.create({
@@ -54,6 +57,7 @@ module.exports = function (createFn, setup, dismantle) {
 
     describe('lean: false', () => {
       let app = createFn()
+      let router = app.ermTestRouter || app
       let server
 
       beforeEach((done) => {
@@ -62,9 +66,11 @@ module.exports = function (createFn, setup, dismantle) {
             return done(err)
           }
 
-          erm.serve(app, db.models.Customer, {
+          erm.serve(router, db.models.Customer, {
             lean: false,
-            restify: app.isRestify
+            restify: app.isRestify,
+            compose: app.ermTestCompose,
+            koa: app.ermTestIsKoa
           })
 
           db.models.Customer.create({
@@ -97,6 +103,7 @@ module.exports = function (createFn, setup, dismantle) {
 
     describe('readPreference: secondary', () => {
       let app = createFn()
+      let router = app.ermTestRouter || app
       let server
 
       beforeEach((done) => {
@@ -105,9 +112,11 @@ module.exports = function (createFn, setup, dismantle) {
             return done(err)
           }
 
-          erm.serve(app, db.models.Customer, {
+          erm.serve(router, db.models.Customer, {
             readPreference: 'secondary',
-            restify: app.isRestify
+            restify: app.isRestify,
+            compose: app.ermTestCompose,
+            koa: app.ermTestIsKoa
           })
 
           db.models.Customer.create({

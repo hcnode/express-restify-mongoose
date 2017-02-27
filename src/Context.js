@@ -21,6 +21,14 @@ class Context {
     this._ctx.response.body = val
   }
 
+  set reqId (val) {
+    this.privateErm.reqId = val
+  }
+
+  get reqId () {
+    return this.privateErm.reqId
+  }
+
 }
 
 class KoaContext extends Context {

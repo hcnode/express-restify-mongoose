@@ -12,6 +12,7 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('no options', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
 
     before((done) => {
@@ -20,7 +21,7 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, app.isRestify ? {
+        erm.serve(router, db.models.Customer, app.isRestify ? {
           restify: app.isRestify
         } : undefined)
 
@@ -45,6 +46,7 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('defaults - version set in defaults', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
 
     before((done) => {
@@ -57,12 +59,16 @@ module.exports = function (createFn, setup, dismantle) {
           version: '/custom'
         })
 
-        erm.serve(app, db.models.Customer, {
-          restify: app.isRestify
+        erm.serve(router, db.models.Customer, {
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
-        erm.serve(app, db.models.Invoice, {
-          restify: app.isRestify
+        erm.serve(router, db.models.Invoice, {
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
         server = app.listen(testPort, done)
@@ -100,6 +106,7 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('totalCountHeader - boolean (default header)', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
 
     before((done) => {
@@ -108,9 +115,11 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, {
+        erm.serve(router, db.models.Customer, {
           totalCountHeader: true,
-          restify: app.isRestify
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
         db.models.Customer.create([{
@@ -202,6 +211,7 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('totalCountHeader - boolean (default header) + contextFilter', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
 
     before((done) => {
@@ -210,10 +220,12 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, {
+        erm.serve(router, db.models.Customer, {
           totalCountHeader: true,
           contextFilter: (model, req, done) => done(model.find()),
-          restify: app.isRestify
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
         db.models.Customer.create([{
@@ -253,6 +265,7 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('totalCountHeader - string (custom header)', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
 
     before((done) => {
@@ -261,9 +274,11 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, {
+        erm.serve(router, db.models.Customer, {
           totalCountHeader: 'X-Custom-Count',
-          restify: app.isRestify
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
         db.models.Customer.create([{
@@ -303,6 +318,7 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('limit', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
 
     before((done) => {
@@ -311,9 +327,11 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, {
+        erm.serve(router, db.models.Customer, {
           limit: 2,
-          restify: app.isRestify
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
         db.models.Customer.create([{
@@ -406,6 +424,7 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('name', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
 
     before((done) => {
@@ -414,9 +433,11 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, {
+        erm.serve(router, db.models.Customer, {
           name: 'Client',
-          restify: app.isRestify
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
         server = app.listen(testPort, done)
@@ -440,6 +461,7 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('prefix', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
 
     before((done) => {
@@ -448,9 +470,11 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, {
+        erm.serve(router, db.models.Customer, {
           prefix: '/applepie',
-          restify: app.isRestify
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
         server = app.listen(testPort, done)
@@ -475,6 +499,7 @@ module.exports = function (createFn, setup, dismantle) {
   describe('version', () => {
     describe('v8', () => {
       let app = createFn()
+      let router = app.ermTestRouter || app
       let server
 
       before((done) => {
@@ -483,9 +508,11 @@ module.exports = function (createFn, setup, dismantle) {
             return done(err)
           }
 
-          erm.serve(app, db.models.Customer, {
+          erm.serve(router, db.models.Customer, {
             version: '/v8',
-            restify: app.isRestify
+            restify: app.isRestify,
+            compose: app.ermTestCompose,
+            koa: app.ermTestIsKoa
           })
 
           server = app.listen(testPort, done)
@@ -509,6 +536,7 @@ module.exports = function (createFn, setup, dismantle) {
 
     describe('custom id location', () => {
       let app = createFn()
+      let router = app.ermTestRouter || app
       let server
       let customer
 
@@ -518,9 +546,11 @@ module.exports = function (createFn, setup, dismantle) {
             return done(err)
           }
 
-          erm.serve(app, db.models.Customer, {
+          erm.serve(router, db.models.Customer, {
             version: '/v8/Entities/:id',
-            restify: app.isRestify
+            restify: app.isRestify,
+            compose: app.ermTestCompose,
+            koa: app.ermTestIsKoa
           })
 
           db.models.Customer.create({
@@ -582,6 +612,7 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('defaults - preUpdate with falsy findOneAndUpdate', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let customer
     let options = {
@@ -604,13 +635,17 @@ module.exports = function (createFn, setup, dismantle) {
 
         erm.defaults(options)
 
-        erm.serve(app, db.models.Product, {
-          restify: app.isRestify
+        erm.serve(router, db.models.Product, {
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
         // order is important, test the second attached model to potentially reproduce the error.
-        erm.serve(app, db.models.Customer, {
-          restify: app.isRestify
+        erm.serve(router, db.models.Customer, {
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
         db.models.Customer.create({
@@ -656,6 +691,7 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('defaults - preDelete with falsy findOneAndRemove', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let customer
     let options = {
@@ -678,13 +714,17 @@ module.exports = function (createFn, setup, dismantle) {
 
         erm.defaults(options)
 
-        erm.serve(app, db.models.Product, {
-          restify: app.isRestify
+        erm.serve(router, db.models.Product, {
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
         // order is important, test the second attached model to potentially reproduce the error.
-        erm.serve(app, db.models.Customer, {
-          restify: app.isRestify
+        erm.serve(router, db.models.Customer, {
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
         db.models.Customer.create({
@@ -719,6 +759,7 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('idProperty', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
     let customer
 
@@ -728,9 +769,11 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, {
+        erm.serve(router, db.models.Customer, {
           idProperty: 'name',
-          restify: app.isRestify
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
         db.models.Customer.create({
@@ -790,6 +833,7 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('allowRegex', () => {
     let app = createFn()
+    let router = app.ermTestRouter || app
     let server
 
     before((done) => {
@@ -798,9 +842,11 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(app, db.models.Customer, {
+        erm.serve(router, db.models.Customer, {
           allowRegex: false,
-          restify: app.isRestify
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
         })
 
         db.models.Customer.create({
