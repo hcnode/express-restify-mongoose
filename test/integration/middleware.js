@@ -1,3 +1,5 @@
+'use strict'
+
 const assert = require('assert')
 const mongoose = require('mongoose')
 const request = require('request')
@@ -12,6 +14,20 @@ module.exports = function (createFn, setup, dismantle) {
   const invalidId = 'invalid-id'
   const randomId = mongoose.Types.ObjectId().toHexString()
   const updateMethods = ['PATCH', 'POST', 'PUT']
+
+  function assertFnCalled (fn, isKoa) {
+    sinon.assert.calledOnce(fn)
+    let args = fn.args[0]
+    if (isKoa) {
+      assert.equal(args.length, 2)
+      assert.equal(typeof args[1], 'function')
+    } else {
+      assert.equal(args.length, 3)
+      assert.equal(typeof args[2], 'function')
+    }
+    let erm = isKoa ? args[0].state.erm : args[0].erm
+    return erm
+  }
 
   describe('preMiddleware/Create/Read/Update/Delete - null', () => {
     let app = createFn()
@@ -77,7 +93,8 @@ module.exports = function (createFn, setup, dismantle) {
 
     updateMethods.forEach((method) => {
       it(`${method} /Customer/:id 200`, (done) => {
-        request({ method,
+        request({
+          method,
           url: `${testUrl}/api/v1/Customer/${customer._id}`,
           json: {
             name: 'Bobby'
@@ -108,9 +125,13 @@ module.exports = function (createFn, setup, dismantle) {
     let server
     let customer
     let options = {
-      preMiddleware: sinon.spy((req, res, next) => {
-        next()
-      }),
+      preMiddleware: app.ermTestIsKoa
+        ? sinon.spy((ctx, next) => {
+          return next()
+        })
+        : sinon.spy((req, res, next) => {
+          next()
+        }),
       restify: app.isRestify,
       compose: app.ermTestCompose,
       koa: app.ermTestIsKoa
@@ -147,10 +168,7 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 200)
-        sinon.assert.calledOnce(options.preMiddleware)
-        let args = options.preMiddleware.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(typeof args[2], 'function')
+        assertFnCalled(options.preMiddleware, app.ermTestIsKoa)
         done()
       })
     })
@@ -162,10 +180,7 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 200)
-        sinon.assert.calledOnce(options.preMiddleware)
-        let args = options.preMiddleware.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(typeof args[2], 'function')
+        assertFnCalled(options.preMiddleware, app.ermTestIsKoa)
         done()
       })
     })
@@ -179,10 +194,7 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 201)
-        sinon.assert.calledOnce(options.preMiddleware)
-        let args = options.preMiddleware.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(typeof args[2], 'function')
+        assertFnCalled(options.preMiddleware, app.ermTestIsKoa)
         done()
       })
     })
@@ -220,7 +232,8 @@ module.exports = function (createFn, setup, dismantle) {
 
     updateMethods.forEach((method) => {
       it(`${method} /Customer/:id 200`, (done) => {
-        request({ method,
+        request({
+          method,
           url: `${testUrl}/api/v1/Customer/${customer._id}`,
           json: {
             name: 'Bobby'
@@ -228,16 +241,14 @@ module.exports = function (createFn, setup, dismantle) {
         }, (err, res, body) => {
           assert.ok(!err)
           assert.equal(res.statusCode, 200)
-          sinon.assert.calledOnce(options.preMiddleware)
-          let args = options.preMiddleware.args[0]
-          assert.equal(args.length, 3)
-          assert.equal(typeof args[2], 'function')
+          assertFnCalled(options.preMiddleware, app.ermTestIsKoa)
           done()
         })
       })
 
       it(`${method} /Customer/:id 400 - not called (missing content type)`, (done) => {
-        request({ method,
+        request({
+          method,
           url: `${testUrl}/api/v1/Customer/${customer._id}`
         }, (err, res, body) => {
           assert.ok(!err)
@@ -252,7 +263,8 @@ module.exports = function (createFn, setup, dismantle) {
       })
 
       it(`${method} /Customer/:id 400 - not called (invalid content type)`, (done) => {
-        request({ method,
+        request({
+          method,
           url: `${testUrl}/api/v1/Customer/${customer._id}`,
           formData: {}
         }, (err, res, body) => {
@@ -275,10 +287,7 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 204)
-        sinon.assert.calledOnce(options.preMiddleware)
-        let args = options.preMiddleware.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(typeof args[2], 'function')
+        assertFnCalled(options.preMiddleware, app.ermTestIsKoa)
         done()
       })
     })
@@ -290,10 +299,7 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 204)
-        sinon.assert.calledOnce(options.preMiddleware)
-        let args = options.preMiddleware.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(typeof args[2], 'function')
+        assertFnCalled(options.preMiddleware, app.ermTestIsKoa)
         done()
       })
     })
@@ -304,9 +310,13 @@ module.exports = function (createFn, setup, dismantle) {
     let router = app.ermTestRouter || app
     let server
     let options = {
-      preCreate: sinon.spy((req, res, next) => {
-        next()
-      }),
+      preCreate: app.ermTestIsKoa
+        ? sinon.spy((ctx, next) => {
+          return next()
+        })
+        : sinon.spy((req, res, next) => {
+          next()
+        }),
       restify: app.isRestify,
       compose: app.ermTestCompose,
       koa: app.ermTestIsKoa
@@ -338,12 +348,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 201)
-        sinon.assert.calledOnce(options.preCreate)
-        let args = options.preCreate.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0].erm.result.name, 'Bob')
-        assert.equal(args[0].erm.statusCode, 201)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.preCreate, app.ermTestIsKoa)
+        assert.equal(erm.result.name, 'Bob')
+        assert.equal(erm.statusCode, 201)
         done()
       })
     })
@@ -355,9 +362,13 @@ module.exports = function (createFn, setup, dismantle) {
     let server
     let customer
     let options = {
-      preRead: sinon.spy((req, res, next) => {
-        next()
-      }),
+      preRead: app.ermTestIsKoa
+        ? sinon.spy((ctx, next) => {
+          return next()
+        })
+        : sinon.spy((req, res, next) => {
+          next()
+        }),
       restify: app.isRestify,
       compose: app.ermTestCompose,
       koa: app.ermTestIsKoa
@@ -394,12 +405,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 200)
-        sinon.assert.calledOnce(options.preRead)
-        let args = options.preRead.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0].erm.result[0].name, 'Bob')
-        assert.equal(args[0].erm.statusCode, 200)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.preRead, app.ermTestIsKoa)
+        assert.equal(erm.result[0].name, 'Bob')
+        assert.equal(erm.statusCode, 200)
         done()
       })
     })
@@ -411,12 +419,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 200)
-        sinon.assert.calledOnce(options.preRead)
-        let args = options.preRead.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0].erm.result.count, 1)
-        assert.equal(args[0].erm.statusCode, 200)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.preRead, app.ermTestIsKoa)
+        assert.equal(erm.result.count, 1)
+        assert.equal(erm.statusCode, 200)
         done()
       })
     })
@@ -428,12 +433,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 200)
-        sinon.assert.calledOnce(options.preRead)
-        let args = options.preRead.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0].erm.result.name, 'Bob')
-        assert.equal(args[0].erm.statusCode, 200)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.preRead, app.ermTestIsKoa)
+        assert.equal(erm.result.name, 'Bob')
+        assert.equal(erm.statusCode, 200)
         done()
       })
     })
@@ -445,12 +447,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 200)
-        sinon.assert.calledOnce(options.preRead)
-        let args = options.preRead.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0].erm.result.name, 'Bob')
-        assert.equal(args[0].erm.statusCode, 200)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.preRead, app.ermTestIsKoa)
+        assert.equal(erm.result.name, 'Bob')
+        assert.equal(erm.statusCode, 200)
         done()
       })
     })
@@ -462,9 +461,13 @@ module.exports = function (createFn, setup, dismantle) {
     let server
     let customer
     let options = {
-      preUpdate: sinon.spy((req, res, next) => {
-        next()
-      }),
+      preUpdate: app.ermTestIsKoa
+        ? sinon.spy((ctx, next) => {
+          return next()
+        })
+        : sinon.spy((req, res, next) => {
+          next()
+        }),
       restify: app.isRestify,
       compose: app.ermTestCompose,
       koa: app.ermTestIsKoa
@@ -496,7 +499,8 @@ module.exports = function (createFn, setup, dismantle) {
 
     updateMethods.forEach((method) => {
       it(`${method} /Customer/:id 200`, (done) => {
-        request({ method,
+        request({
+          method,
           url: `${testUrl}/api/v1/Customer/${customer._id}`,
           json: {
             name: 'Bobby'
@@ -504,18 +508,16 @@ module.exports = function (createFn, setup, dismantle) {
         }, (err, res, body) => {
           assert.ok(!err)
           assert.equal(res.statusCode, 200)
-          sinon.assert.calledOnce(options.preUpdate)
-          let args = options.preUpdate.args[0]
-          assert.equal(args.length, 3)
-          assert.equal(args[0].erm.result.name, 'Bobby')
-          assert.equal(args[0].erm.statusCode, 200)
-          assert.equal(typeof args[2], 'function')
+          let erm = assertFnCalled(options.preUpdate, app.ermTestIsKoa)
+          assert.equal(erm.result.name, 'Bobby')
+          assert.equal(erm.statusCode, 200)
           done()
         })
       })
 
       it(`${method} /Customer/:id 400 - not called (missing content type)`, (done) => {
-        request({ method,
+        request({
+          method,
           url: `${testUrl}/api/v1/Customer/${customer._id}`
         }, (err, res, body) => {
           assert.ok(!err)
@@ -530,7 +532,8 @@ module.exports = function (createFn, setup, dismantle) {
       })
 
       it(`${method} /Customer/:id 400 - not called (invalid content type)`, (done) => {
-        request({ method,
+        request({
+          method,
           url: `${testUrl}/api/v1/Customer/${customer._id}`,
           formData: {}
         }, (err, res, body) => {
@@ -553,9 +556,13 @@ module.exports = function (createFn, setup, dismantle) {
     let server
     let customer
     let options = {
-      preDelete: sinon.spy((req, res, next) => {
-        next()
-      }),
+      preDelete: app.ermTestIsKoa
+        ? sinon.spy((ctx, next) => {
+          return next()
+        })
+        : sinon.spy((req, res, next) => {
+          next()
+        }),
       restify: app.isRestify,
       compose: app.ermTestCompose,
       koa: app.ermTestIsKoa
@@ -592,12 +599,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 204)
-        sinon.assert.calledOnce(options.preDelete)
-        let args = options.preDelete.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0].erm.result, undefined)
-        assert.equal(args[0].erm.statusCode, 204)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.preDelete, app.ermTestIsKoa)
+        assert.equal(erm.result, undefined)
+        assert.equal(erm.statusCode, 204)
         done()
       })
     })
@@ -609,12 +613,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 204)
-        sinon.assert.calledOnce(options.preDelete)
-        let args = options.preDelete.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0].erm.result, undefined)
-        assert.equal(args[0].erm.statusCode, 204)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.preDelete, app.ermTestIsKoa)
+        assert.equal(erm.result, undefined)
+        assert.equal(erm.statusCode, 204)
         done()
       })
     })
@@ -713,9 +714,13 @@ module.exports = function (createFn, setup, dismantle) {
     let router = app.ermTestRouter || app
     let server
     let options = {
-      postCreate: sinon.spy((req, res, next) => {
-        next()
-      }),
+      postCreate: app.ermTestIsKoa
+        ? sinon.spy((ctx, next) => {
+          return next()
+        })
+        : sinon.spy((req, res, next) => {
+          next()
+        }),
       restify: app.isRestify,
       compose: app.ermTestCompose,
       koa: app.ermTestIsKoa
@@ -747,12 +752,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 201)
-        sinon.assert.calledOnce(options.postCreate)
-        let args = options.postCreate.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0].erm.result.name, 'Bob')
-        assert.equal(args[0].erm.statusCode, 201)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.postCreate, app.ermTestIsKoa)
+        assert.equal(erm.result.name, 'Bob')
+        assert.equal(erm.statusCode, 201)
         done()
       })
     })
@@ -795,9 +797,13 @@ module.exports = function (createFn, setup, dismantle) {
     let server
     let customer
     let options = {
-      postRead: sinon.spy((req, res, next) => {
-        next()
-      }),
+      postRead: app.ermTestIsKoa
+        ? sinon.spy((ctx, next) => {
+          return next()
+        })
+        : sinon.spy((req, res, next) => {
+          next()
+        }),
       restify: app.isRestify,
       compose: app.ermTestCompose,
       koa: app.ermTestIsKoa
@@ -834,12 +840,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 200)
-        sinon.assert.calledOnce(options.postRead)
-        let args = options.postRead.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0].erm.result[0].name, 'Bob')
-        assert.equal(args[0].erm.statusCode, 200)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.postRead, app.ermTestIsKoa)
+        assert.equal(erm.result[0].name, 'Bob')
+        assert.equal(erm.statusCode, 200)
         done()
       })
     })
@@ -851,12 +854,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 200)
-        sinon.assert.calledOnce(options.postRead)
-        let args = options.postRead.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0].erm.result.count, 1)
-        assert.equal(args[0].erm.statusCode, 200)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.postRead, app.ermTestIsKoa)
+        assert.equal(erm.result.count, 1)
+        assert.equal(erm.statusCode, 200)
         done()
       })
     })
@@ -868,12 +868,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 200)
-        sinon.assert.calledOnce(options.postRead)
-        let args = options.postRead.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0].erm.result.name, 'Bob')
-        assert.equal(args[0].erm.statusCode, 200)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.postRead, app.ermTestIsKoa)
+        assert.equal(erm.result.name, 'Bob')
+        assert.equal(erm.statusCode, 200)
         done()
       })
     })
@@ -909,12 +906,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 200)
-        sinon.assert.calledOnce(options.postRead)
-        let args = options.postRead.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0].erm.result.name, 'Bob')
-        assert.equal(args[0].erm.statusCode, 200)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.postRead, app.ermTestIsKoa)
+        assert.equal(erm.result.name, 'Bob')
+        assert.equal(erm.statusCode, 200)
         done()
       })
     })
@@ -926,9 +920,13 @@ module.exports = function (createFn, setup, dismantle) {
     let server
     let customer
     let options = {
-      postUpdate: sinon.spy((req, res, next) => {
-        next()
-      }),
+      postUpdate: app.ermTestIsKoa
+        ? sinon.spy((ctx, next) => {
+          return next()
+        })
+        : sinon.spy((req, res, next) => {
+          next()
+        }),
       restify: app.isRestify,
       compose: app.ermTestCompose,
       koa: app.ermTestIsKoa
@@ -960,7 +958,8 @@ module.exports = function (createFn, setup, dismantle) {
 
     updateMethods.forEach((method) => {
       it(`${method} /Customer/:id 200`, (done) => {
-        request({ method,
+        request({
+          method,
           url: `${testUrl}/api/v1/Customer/${customer._id}`,
           json: {
             name: 'Bobby'
@@ -968,18 +967,16 @@ module.exports = function (createFn, setup, dismantle) {
         }, (err, res, body) => {
           assert.ok(!err)
           assert.equal(res.statusCode, 200)
-          sinon.assert.calledOnce(options.postUpdate)
-          let args = options.postUpdate.args[0]
-          assert.equal(args.length, 3)
-          assert.equal(args[0].erm.result.name, 'Bobby')
-          assert.equal(args[0].erm.statusCode, 200)
-          assert.equal(typeof args[2], 'function')
+          let erm = assertFnCalled(options.postUpdate, app.ermTestIsKoa)
+          assert.equal(erm.result.name, 'Bobby')
+          assert.equal(erm.statusCode, 200)
           done()
         })
       })
 
       it(`${method} /Customer/:id 404 - random id`, (done) => {
-        request({ method,
+        request({
+          method,
           url: `${testUrl}/api/v1/Customer/${randomId}`,
           json: {
             name: 'Bobby'
@@ -993,7 +990,8 @@ module.exports = function (createFn, setup, dismantle) {
       })
 
       it(`${method} /Customer/:id 404 - invalid id`, (done) => {
-        request({ method,
+        request({
+          method,
           url: `${testUrl}/api/v1/Customer/${invalidId}`,
           json: {
             name: 'Bobby'
@@ -1007,7 +1005,8 @@ module.exports = function (createFn, setup, dismantle) {
       })
 
       it(`${method} /Customer/:id 400 - not called (missing content type)`, (done) => {
-        request({ method,
+        request({
+          method,
           url: `${testUrl}/api/v1/Customer/${customer._id}`
         }, (err, res, body) => {
           assert.ok(!err)
@@ -1022,7 +1021,8 @@ module.exports = function (createFn, setup, dismantle) {
       })
 
       it(`${method} /Customer/:id 400 - not called (invalid content type)`, (done) => {
-        request({ method,
+        request({
+          method,
           url: `${testUrl}/api/v1/Customer/${customer._id}`,
           formData: {}
         }, (err, res, body) => {
@@ -1045,9 +1045,13 @@ module.exports = function (createFn, setup, dismantle) {
     let server
     let customer
     let options = {
-      postDelete: sinon.spy((req, res, next) => {
-        next()
-      }),
+      postDelete: app.ermTestIsKoa
+        ? sinon.spy((ctx, next) => {
+          return next()
+        })
+        : sinon.spy((req, res, next) => {
+          next()
+        }),
       restify: app.isRestify,
       compose: app.ermTestCompose,
       koa: app.ermTestIsKoa
@@ -1084,12 +1088,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 204)
-        sinon.assert.calledOnce(options.postDelete)
-        let args = options.postDelete.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0].erm.result, undefined)
-        assert.equal(args[0].erm.statusCode, 204)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.postDelete, app.ermTestIsKoa)
+        assert.equal(erm.result, undefined)
+        assert.equal(erm.statusCode, 204)
         done()
       })
     })
@@ -1101,12 +1102,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 204)
-        sinon.assert.calledOnce(options.postDelete)
-        let args = options.postDelete.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0].erm.result, undefined)
-        assert.equal(args[0].erm.statusCode, 204)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.postDelete, app.ermTestIsKoa)
+        assert.equal(erm.result, undefined)
+        assert.equal(erm.statusCode, 204)
         done()
       })
     })
@@ -1141,9 +1139,13 @@ module.exports = function (createFn, setup, dismantle) {
     let router = app.ermTestRouter || app
     let server
     let options = {
-      postCreate: sinon.spy((req, res, next) => {
-        next(new Error('Something went wrong'))
-      }),
+      postCreate: app.ermTestIsKoa
+        ? sinon.spy((ctx, next) => {
+          return Promise.reject(new Error('Something went wrong'))
+        })
+        : sinon.spy((req, res, next) => {
+          next(new Error('Something went wrong'))
+        }),
       postProcess: sinon.spy(),
       restify: app.isRestify,
       compose: app.ermTestCompose,
@@ -1177,12 +1179,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 400)
-        sinon.assert.calledOnce(options.postCreate)
-        let args = options.postCreate.args[0]
-        assert.equal(args.length, 3)
-        assert.equal(args[0].erm.result.name, 'Bob')
-        assert.equal(args[0].erm.statusCode, 400)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.postCreate, app.ermTestIsKoa)
+        assert.equal(erm.result.name, 'Bob')
+        assert.equal(erm.statusCode, 400)
         sinon.assert.notCalled(options.postProcess)
         done()
       })
@@ -1194,9 +1193,13 @@ module.exports = function (createFn, setup, dismantle) {
     let router = app.ermTestRouter || app
     let server
     let options = {
-      postProcess: sinon.spy((req, res, next) => {
-        next()
-      }),
+      postProcess: app.ermTestIsKoa
+        ? sinon.spy((ctx, next) => {
+          return next()
+        })
+        : sinon.spy((req, res, next) => {
+          next()
+        }),
       restify: app.isRestify,
       compose: app.ermTestCompose,
       koa: app.ermTestIsKoa
@@ -1226,12 +1229,9 @@ module.exports = function (createFn, setup, dismantle) {
       }, (err, res, body) => {
         assert.ok(!err)
         assert.equal(res.statusCode, 200)
-        sinon.assert.calledOnce(options.postProcess)
-        let args = options.postProcess.args[0]
-        assert.equal(args.length, 3)
-        assert.deepEqual(args[0].erm.result, [])
-        assert.equal(args[0].erm.statusCode, 200)
-        assert.equal(typeof args[2], 'function')
+        let erm = assertFnCalled(options.postProcess, app.ermTestIsKoa)
+        assert.deepEqual(erm.result, [])
+        assert.equal(erm.statusCode, 200)
         done()
       })
     })

@@ -43,6 +43,6 @@ module.exports = function (options) {
       }, (err) => {
         debug('%s access response error', ctx.state._ermReqId)
         return Promise.reject(err)
-      });
+      })
   }
 }

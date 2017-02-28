@@ -21,9 +21,11 @@ module.exports = function (createFn, setup, dismantle) {
           return done(err)
         }
 
-        erm.serve(router, db.models.Customer, app.isRestify ? {
-          restify: app.isRestify
-        } : undefined)
+        erm.serve(router, db.models.Customer, {
+          restify: app.isRestify,
+          compose: app.ermTestCompose,
+          koa: app.ermTestIsKoa
+        })
 
         server = app.listen(testPort, done)
       })
@@ -617,14 +619,21 @@ module.exports = function (createFn, setup, dismantle) {
     let customer
     let options = {
       findOneAndUpdate: false,
-      preUpdate: [
-        sinon.spy((req, res, next) => {
+      preUpdate: app.ermTestIsKoa
+        ? [sinon.spy((ctx, next) => {
+          return next()
+        }),
+          sinon.spy((ctx, next) => {
+            return next()
+          })]
+
+        : [sinon.spy((req, res, next) => {
           next()
         }),
-        sinon.spy((req, res, next) => {
-          next()
-        })
-      ]
+          sinon.spy((req, res, next) => {
+            next()
+          })
+        ]
     }
 
     before((done) => {
@@ -666,7 +675,8 @@ module.exports = function (createFn, setup, dismantle) {
 
     updateMethods.forEach((method) => {
       it(`${method} /Customer/:id 200`, (done) => {
-        request({ method,
+        request({
+          method,
           url: `${testUrl}/api/v1/Customer/${customer._id}`,
           json: {
             age: 12
@@ -696,14 +706,21 @@ module.exports = function (createFn, setup, dismantle) {
     let customer
     let options = {
       findOneAndRemove: false,
-      preDelete: [
-        sinon.spy((req, res, next) => {
+      preDelete: app.ermTestIsKoa
+        ? [sinon.spy((ctx, next) => {
+          return next()
+        }),
+          sinon.spy((ctx, next) => {
+            return next()
+          })]
+
+        : [sinon.spy((req, res, next) => {
           next()
         }),
-        sinon.spy((req, res, next) => {
-          next()
-        })
-      ]
+          sinon.spy((req, res, next) => {
+            next()
+          })
+        ]
     }
 
     before((done) => {
@@ -805,7 +822,8 @@ module.exports = function (createFn, setup, dismantle) {
 
     updateMethods.forEach((method) => {
       it(`${method} /Customer/:name 200`, (done) => {
-        request({ method,
+        request({
+          method,
           url: `${testUrl}/api/v1/Customer/${customer.name}`,
           json: {
             age: 12

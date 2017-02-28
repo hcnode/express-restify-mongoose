@@ -39,7 +39,6 @@ function doGetItems (state) {
         debug('getItems')
         return stateWithResult
       }
-
     }, err => {
       return Promise.reject(err)
     })

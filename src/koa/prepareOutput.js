@@ -4,9 +4,6 @@ const debug = require('debug')('erm:koa')
 const getPostMiddlewareForMethod = require('../api/shared').getPostMiddlewareForMethod
 
 module.exports = function (options, excludedMap) {
-  if (!options.compose) {
-    throw new Error('Koa applications must set options.compose to koa-compose module')
-  }
   return function prepareOutput (ctx, next) {
     debug(ctx.state._ermReqId + ' prepareOutput')
     const postMiddleware = getPostMiddlewareForMethod(options, ctx.method, ctx.state.erm.statusCode)
@@ -37,14 +34,14 @@ module.exports = function (options, excludedMap) {
           const headerName = (typeof options.totalCountHeader === 'string')
             ? options.totalCountHeader
             : 'X-Total-Count'
-          ctx.response.header[headerName] = ctx.state.erm.totalCount
+          ctx.set(headerName, ctx.state.erm.totalCount)
         }
 
         return options.outputFn(ctx)
       })
       .then((resp) => {
         if (options.postProcess) {
-          return options.compose(options.postProcess)(ctx)
+          return options.postProcess(ctx, next)
         } else {
           return Promise.resolve()
         }

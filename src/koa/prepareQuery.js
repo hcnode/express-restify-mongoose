@@ -16,7 +16,7 @@ module.exports = function (options) {
           }, (err) => {
             debug('%s prepareQuery error response', ctx.state._ermReqId)
             return Promise.reject(err)
-          });
+          })
       })
   }
 }
