@@ -9,7 +9,7 @@ module.exports = function (options) {
   const errorHandler = ErrorHandler(options)
 
   return function (req, res, next) {
-    debug('%s prepareQuery %s', req.reqId, JSON.stringify(req.query))
+    debug('%s prepareQuery %s', req._ermReqId, JSON.stringify(req.query))
     prepareQueryAsPromise(req.query)
       .then((queryOptions) => {
         req._erm = req._erm || {}

@@ -116,8 +116,8 @@ const restify = function (app, model, opts = {}) {
       // At the start of each request, add our initial operation state to be stored in ctx.erm and
       // ctx._erm
       _.merge(ctx.state, initialOperationState.serializeToRequest())
-      ctx.reqId = (++reqId)
-      debug('%s initialize context state', ctx.reqId)
+      ctx.state._ermReqId = ctx.state._ermReqId || (++reqId)
+      debug('%s initialize context state', ctx.state._ermReqId)
       return next()
     })
 
@@ -133,8 +133,8 @@ const restify = function (app, model, opts = {}) {
       // At the start of each request, add our initial operation state, to be stored in req.erm and
       // req._erm
       _.merge(req, initialOperationState.serializeToRequest())
-      req.reqId = (++reqId)
-      debug('%s initialize context state', req.reqId)
+      req._ermReqId = req._ermReqId || (++reqId)
+      debug('%s initialize context state', req._ermReqId)
       next()
     })
   }

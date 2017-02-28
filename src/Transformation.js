@@ -41,7 +41,7 @@ class Transformation {
 
     if (initialState.options.koa) {
       return function transform(ctx, next) {
-        debug( '%s %s', ctx.reqId, transformation.name )
+        debug( '%s transformation %s', ctx.state._ermReqId, transformation.name ? transformation.name : 'anonymous')
         let universalCtx = new KoaContext(ctx)
         const currentState = ERMOperation.deserializeRequest(universalCtx)
 
@@ -51,6 +51,13 @@ class Transformation {
             _.merge(universalCtx.ermHost, resultState.serializeToRequest())
             return next()
           })
+          .then((resp) => {
+            debug( '%s transformation %s response', ctx.state._ermReqId, transformation.name ? transformation.name : 'anonymous')
+            return Promise.resolve(resp)
+          }, (err) => {
+            debug( '%s transformation %s error response', ctx.state._ermReqId, transformation.name ? transformation.name : 'anonymous')
+            return Promise.reject(err)
+          });
       }
     } else {  // Express
       const errorHandler = require('./errorHandler')(initialState.options)

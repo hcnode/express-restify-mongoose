@@ -27,7 +27,7 @@ module.exports = function (options) {
         }
 
         req._erm.access = access
-        debug('%s access \'%s\'', req.reqId, access)
+        debug('%s access \'%s\'', req._ermReqId, access)
         return next()
       })
       .catch(err => {

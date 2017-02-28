@@ -8,7 +8,7 @@ module.exports = function (options, excludedMap) {
     throw new Error('Koa applications must set options.compose to koa-compose module')
   }
   return function prepareOutput (ctx, next) {
-    debug(ctx.reqId + ' prepareOutput')
+    debug(ctx.state._ermReqId + ' prepareOutput')
     const postMiddleware = getPostMiddlewareForMethod(options, ctx.method, ctx.state.erm.statusCode)
 
     return Promise.resolve()

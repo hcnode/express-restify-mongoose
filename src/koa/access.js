@@ -29,13 +29,20 @@ module.exports = function (options) {
       p = Promise.resolve('public')
     }
 
-    p.then((access) => {
+    return p.then((access) => {
       if (['public', 'private', 'protected'].indexOf(access) < 0) {
         return Promise.reject(new Error('Unsupported access, must be "private", "protected" or "public"'))
       }
       ctx.state._erm.access = access
-      debug('%s access \'%s\'', ctx.reqId, access)
+      debug('%s access \'%s\'', ctx.state._ermReqId, access)
       return next()
     })
+      .then((resp) => {
+        debug('%s access response', ctx.state._ermReqId)
+        return Promise.resolve(resp)
+      }, (err) => {
+        debug('%s access response error', ctx.state._ermReqId)
+        return Promise.reject(err)
+      });
   }
 }

@@ -12,12 +12,12 @@ const serializeError = require('serialize-error')
  */
 module.exports = function (options) {
   return function onError (ctx, next) {
-    debug('%s onError request', ctx.reqId)
+    debug('%s onError request', ctx.state._ermReqId)
     return next()
       .then(() => {
-        debug('%s onError response no error', ctx.reqId)
+        debug('%s onError response no error', ctx.state._ermReqId)
       }, (err) => {
-        debug('%s onError response error %s', ctx.reqId, err)
+        debug('%s onError response error %s', ctx.state._ermReqId, err)
         const serializedErr = serializeError(err)
         delete serializedErr.stack
 

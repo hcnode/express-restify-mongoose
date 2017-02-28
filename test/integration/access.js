@@ -9,8 +9,8 @@ module.exports = function (createFn, setup, dismantle) {
   const testUrl = `http://localhost:${testPort}`
   const updateMethods = ['PATCH', 'POST', 'PUT']
 
-  describe.only('access', () => {
-    describe.only('private - include private and protected fields', () => {
+  describe('access', () => {
+    describe('private - include private and protected fields', () => {
       let app = createFn()
       let router = app.ermTestRouter || app
       let server
@@ -155,7 +155,7 @@ module.exports = function (createFn, setup, dismantle) {
         dismantle(app, server, done)
       })
 
-      it.only('GET /Customer 200', (done) => {
+      it('GET /Customer 200', (done) => {
         request.get({
           url: `${testUrl}/api/v1/Customer`,
           json: true

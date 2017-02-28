@@ -8,7 +8,7 @@ module.exports = function (options, excludedMap) {
   const errorHandler = require('../errorHandler')(options)
 
   return function (req, res, next) {
-    debug(req.reqId + ' prepareOutput')
+    debug(req._ermReqId + ' prepareOutput')
     const postMiddleware = getPostMiddlewareForMethod(options, req.method, req.erm.statusCode) || []
 
     async.eachSeries(

@@ -5,7 +5,7 @@ module.exports = function (options) {
 
   return function ensureContentType (req, res, next) {
     const ct = req.headers['content-type']
-    debug('%s ensureContentType for \'%s\'', req.reqId, ct)
+    debug('%s ensureContentType for \'%s\'', req._ermReqId, ct)
 
     if (!ct) {
       return errorHandler(req, res, next)(new Error('missing_content_type'))
