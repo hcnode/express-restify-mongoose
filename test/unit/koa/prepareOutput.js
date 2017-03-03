@@ -1,275 +1,347 @@
 const sinon = require('sinon')
 const assert = require('assert')
 const _ = require('lodash')
+const compose = require('koa-compose')
 
 describe('prepareOutput', () => {
-  const prepareOutput = require('../../../lib/middleware/prepareOutput')
+  const prepareOutput = require('../../../lib/koa/prepareOutput')
 
-  let onError = sinon.spy()
-  let outputFn = sinon.spy()
-  let next = sinon.spy()
+  let next = sinon.stub().returns(Promise.resolve())
+  let outputFn = sinon.stub().returns(Promise.resolve())
 
   afterEach(() => {
-    onError.reset()
     outputFn.reset()
     next.reset()
   })
 
   it('calls outputFn with default options and no post* middleware', () => {
-    let req = {
+    let ctx = {
       method: 'GET',
-      erm: {}
+      state: {
+        erm: {
+          statusCode: 398
+        },
+        _ernReqId: 5
+      }
     }
 
     let options = {
-      onError: onError,
       outputFn: outputFn
     }
 
-    prepareOutput(options)(req, {}, next)
+    return new Promise((resolve, reject) => {
+      prepareOutput(options)(ctx, next)
+        .then((resp) => {
+          sinon.assert.calledOnce(outputFn)
+          sinon.assert.calledWithExactly(outputFn, ctx)
+          sinon.assert.notCalled(next)
+          resolve()
+        }, (err) => {
+          reject('should not result in error')
+        });
+    });
 
-    sinon.assert.calledOnce(outputFn)
-    sinon.assert.calledWithExactly(outputFn, req, {})
-    sinon.assert.notCalled(onError)
-    sinon.assert.notCalled(next)
   })
 
   it('calls outputFn with default options and postCreate middleware', () => {
-    let req = {
-      erm: {
-        result: {
-          name: 'Bob'
+    let ctx = {
+      method: 'POST',
+      state: {
+        erm: {
+          statusCode: 201
         },
-        statusCode: 201
-      },
-      method: 'POST'
+        _ernReqId: 5
+      }
     }
 
-    let postCreate = sinon.stub().yields()
+    let postCreate = sinon.stub().returns(Promise.resolve())
 
     let options = {
-      onError: onError,
       outputFn: outputFn,
-      postCreate: [postCreate]
+      postCreate: compose([postCreate]),
     }
 
-    prepareOutput(options)(req, {}, next)
-
-    sinon.assert.calledOnce(postCreate)
-    sinon.assert.calledOnce(outputFn)
-    sinon.assert.calledWithExactly(outputFn, req, {})
-    sinon.assert.notCalled(onError)
-    sinon.assert.notCalled(next)
+    return new Promise((resolve, reject) => {
+      prepareOutput(options)(ctx, next)
+        .then((resp) => {
+          sinon.assert.calledOnce(postCreate)
+          sinon.assert.calledOnce(outputFn)
+          sinon.assert.calledWithExactly(outputFn, ctx)
+          sinon.assert.notCalled(next)
+          resolve()
+        }, (err) => {
+          reject('should not result in error')
+        });
+    });
   })
 
   it('calls outputFn with default options and postRead middleware', () => {
-    let req = {
-      erm: {
-        result: {
-          name: 'Bob'
+    let ctx = {
+      method: 'GET',
+      state: {
+        erm: {
+          statusCode: 200
         },
-        statusCode: 200
-      },
-      method: 'GET'
+        _ernReqId: 5
+      }
     }
 
-    let postRead = sinon.stub().yields()
+    let postRead = sinon.stub().returns(Promise.resolve())
 
     let options = {
-      onError: onError,
       outputFn: outputFn,
-      postRead: [postRead]
+      postRead: compose([postRead]),
     }
 
-    prepareOutput(options)(req, {}, next)
-
-    sinon.assert.calledOnce(postRead)
-    sinon.assert.calledOnce(outputFn)
-    sinon.assert.calledWithExactly(outputFn, req, {})
-    sinon.assert.notCalled(onError)
-    sinon.assert.notCalled(next)
+    return new Promise((resolve, reject) => {
+      prepareOutput(options)(ctx, next)
+        .then((resp) => {
+          sinon.assert.calledOnce(postRead)
+          sinon.assert.calledOnce(outputFn)
+          sinon.assert.calledWithExactly(outputFn, ctx)
+          sinon.assert.notCalled(next)
+          resolve()
+        }, (err) => {
+          reject('should not result in error')
+        })
+    })
   })
 
   it('calls outputFn with default options and postUpdate middleware', () => {
-    let req = {
-      erm: {
-        result: {
-          name: 'Bob'
+    let ctx = {
+      method: 'POST',
+      state: {
+        erm: {
+          statusCode: 200,
+          result: {
+            name: 'Bob'
+          },
         },
-        statusCode: 200
-      },
-      method: 'POST'
+        _ernReqId: 5
+      }
     }
 
-    let postUpdate = sinon.stub().yields()
+    let postUpdate = sinon.stub().returns(Promise.resolve())
 
     let options = {
-      onError: onError,
       outputFn: outputFn,
-      postUpdate: [postUpdate]
+      postUpdate: compose([postUpdate]),
     }
 
-    prepareOutput(options)(req, {}, next)
-
-    sinon.assert.calledOnce(postUpdate)
-    sinon.assert.calledOnce(outputFn)
-    sinon.assert.calledWithExactly(outputFn, req, {})
-    sinon.assert.notCalled(onError)
-    sinon.assert.notCalled(next)
+    return new Promise((resolve, reject) => {
+      prepareOutput(options)(ctx, next)
+        .then((resp) => {
+          sinon.assert.calledOnce(postUpdate)
+          sinon.assert.calledOnce(outputFn)
+          sinon.assert.calledWithExactly(outputFn, ctx)
+          sinon.assert.notCalled(next)
+          resolve()
+        }, (err) => {
+          reject('should not result in error')
+        })
+    })
   })
 
   it('calls outputFn with default options and postUpdate middleware', () => {
-    let req = {
-      erm: {
-        result: {
-          name: 'Bob'
+    let ctx = {
+      method: 'PUT',
+      state: {
+        erm: {
+          statusCode: 200,
+          result: {
+            name: 'Bob'
+          },
         },
-        statusCode: 200
-      },
-      method: 'PUT'
+        _ernReqId: 5
+      }
     }
 
-    let postUpdate = sinon.stub().yields()
+    let postUpdate = sinon.stub().returns(Promise.resolve())
 
     let options = {
-      onError: onError,
       outputFn: outputFn,
-      postUpdate: [postUpdate]
+      postUpdate: compose([postUpdate])
     }
 
-    prepareOutput(options)(req, {}, next)
-
-    sinon.assert.calledOnce(postUpdate)
-    sinon.assert.calledOnce(outputFn)
-    sinon.assert.calledWithExactly(outputFn, req, {})
-    sinon.assert.notCalled(onError)
-    sinon.assert.notCalled(next)
+    return new Promise((resolve, reject) => {
+      prepareOutput(options)(ctx, next)
+        .then((resp) => {
+          sinon.assert.calledOnce(postUpdate)
+          sinon.assert.calledOnce(outputFn)
+          sinon.assert.calledWithExactly(outputFn, ctx)
+          sinon.assert.notCalled(next)
+          resolve()
+        }, (err) => {
+          reject('should not result in error')
+        })
+    })
   })
 
   it('calls outputFn with default options and postDelete middleware', () => {
-    let req = {
-      erm: {
-        result: {
-          name: 'Bob'
+    let ctx = {
+      method: 'DELETE',
+      state: {
+        erm: {
+          statusCode: 204,
+          result: {
+            name: 'Bob'
+          },
         },
-        statusCode: 204
-      },
-      method: 'DELETE'
+        _ernReqId: 5
+      }
     }
 
-    let postDelete = sinon.stub().yields()
+    let postDelete = sinon.stub().returns(Promise.resolve())
 
     let options = {
-      onError: onError,
       outputFn: outputFn,
-      postDelete: [postDelete]
+      postDelete: compose([postDelete])
     }
 
-    prepareOutput(options)(req, {}, next)
-
-    sinon.assert.calledOnce(postDelete)
-    sinon.assert.calledOnce(outputFn)
-    sinon.assert.calledWithExactly(outputFn, req, {})
-    sinon.assert.notCalled(onError)
-    sinon.assert.notCalled(next)
+    return new Promise((resolve, reject) => {
+      prepareOutput(options)(ctx, next)
+        .then((resp) => {
+          sinon.assert.calledOnce(postDelete)
+          sinon.assert.calledOnce(outputFn)
+          sinon.assert.calledWithExactly(outputFn, ctx)
+          sinon.assert.notCalled(next)
+          resolve()
+        }, (err) => {
+          reject('should not result in error')
+        })
+    })
   })
 
-  it('calls onError with default options and bad postRead middleware', () => {
-    let req = {
-      erm: {},
+  it('calls outputFn with default options and bad postRead middleware', () => {
+    let ctx = {
       method: 'GET',
-      params: {}
+      state: {
+        erm: {
+          statusCode: 200
+        },
+        _ernReqId: 5
+      }
     }
 
-    let err = new Error('An error occurred')
-    let postRead = sinon.stub().yields(err)
+    let postRead = sinon.stub().returns(Promise.reject(new Error('an error occurred')))
 
     let options = {
-      onError: onError,
       outputFn: outputFn,
-      postRead: [postRead]
+      postRead: compose([postRead])
     }
 
-    prepareOutput(options)(req, {}, next)
-
-    sinon.assert.calledOnce(postRead)
-    sinon.assert.calledOnce(onError)
-    sinon.assert.calledWithExactly(onError, err, req, {}, next)
-    sinon.assert.notCalled(outputFn)
-    sinon.assert.notCalled(next)
+    return new Promise((resolve, reject) => {
+      prepareOutput(options)(ctx, next)
+        .then((resp) => {
+          reject('should result in error')
+        }, (err) => {
+          sinon.assert.calledOnce(postRead)
+          assert(err.message, 'an error occurred')
+          sinon.assert.notCalled(outputFn)
+          sinon.assert.notCalled(next)
+          resolve()
+        })
+    })
   })
 
   describe(`asynchronous outputFn`, () => {
-    it(`calls outputFn -> postProcess if no errors`, done => {
-      let expressRequest = {
+    it('calls outputFn -> postProcess if no errors', () => {
+      let ctx = {
         method: 'GET',
-        erm: {}
+        state: {
+          erm: {
+            statusCode: 200
+          },
+          _ernReqId: 5
+        }
       }
+      let status = {}
 
       let options = {
-        onError: () => done(new Error(`Should not call onError()`)),
-
         // Should be called before postProcess
-        outputFn: (req, res, next) => {
-          assert.strictEqual(req.method, expressRequest.method)
-          assert.ok(_.isEmpty(res))
-          req.calledOutput = true
-          return next()
+        outputFn: (context) => {
+          assert.strictEqual(ctx.method, context.method)
+          assert.ok(_.isEmpty(context.state.erm.result))
+          status.calledOutput = true
+          return Promise.resolve()
         },
 
-        postProcess: (req, res, next) => {
-          assert.ok(req.calledOutput === true)
+        postProcess: (context, next) => {
+          assert.ok(status.calledOutput === true)
+          status.calledPostProcess = true
           return next()
         }
       }
 
-      prepareOutput(options)(expressRequest, {}, done)
+      return new Promise((resolve, reject) => {
+        prepareOutput(options)(ctx, next)
+          .then((resp) => {
+            resolve()
+          }, (err) => {
+            assert.ok(status.calledOutput === true)
+            assert.ok(status.calledPostProcess === true)
+            reject('should not result in error')
+          })
+      })
     })
 
-    it(`outputFn errors are handled`, done => {
-      let expressRequest = {
+
+    it(`outputFn errors are handled`, () => {
+      let ctx = {
         method: 'GET',
-        params: {},
-        erm: {}
+        state: {
+          erm: {
+            statusCode: 200
+          },
+          _ernReqId: 5
+        }
       }
-
       const outputError = new Error('outputFn error')
-
-      let options = {
-        onError: (err, req, res, next) => {
-          assert.strictEqual(
-            err.cause, outputError,
-            `The outputFn error should propagate to the onError handler`
-          )
-          return next()
+      const options = {
+        outputFn: (ctx) => {
+          return Promise.reject(outputError)
         },
-
-        outputFn: (req, res, next) => next(outputError),
-
         postProcess: _.noop
       }
 
-      prepareOutput(options)(expressRequest, {}, done)
+      return new Promise((resolve, reject) => {
+        prepareOutput(options)(ctx, next)
+          .then((resp) => {
+            reject('should result in error')
+          }, (err) => {
+            assert(err.message, outputError.message)
+            sinon.assert.notCalled(next)
+            resolve()
+          })
+      })
     })
 
-    it(`postProcess errors are handled`, done => {
-      let expressRequest = {
+    it(`postProcess errors are handled`, () => {
+      let ctx = {
         method: 'GET',
-        params: {},
-        erm: {}
+        state: {
+          erm: {
+            statusCode: 200
+          },
+          _ernReqId: 5
+        }
+      }
+      const postProcessError = new Error('postProcess error')
+      const options = {
+        postProcess: (ctx) => {
+          return Promise.reject(postProcessError)
+        }
       }
 
-      const postProcessError = new Error('outputFn error')
-
-      let options = {
-        onError: () => done(new Error(`Should not call onError()`)),
-        outputFn: (req, res, next) => next(),
-        postProcess: (req, res, next) => next(postProcessError)
-      }
-
-      prepareOutput(options)(expressRequest, {}, err => {
-        assert.strictEqual(err, postProcessError)
-        done()
+      return new Promise((resolve, reject) => {
+        prepareOutput(options)(ctx, next)
+          .then((resp) => {
+            reject('should result in error')
+          }, (err) => {
+            assert(err.message, postProcessError.message)
+            sinon.assert.notCalled(next)
+            resolve()
+          })
       })
     })
   })

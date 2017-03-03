@@ -3,19 +3,23 @@
 const debug = require('debug')('erm:koa')
 const getPostMiddlewareForMethod = require('../api/shared').getPostMiddlewareForMethod
 
+
 module.exports = function (options, excludedMap) {
+
+  function execMiddleware (fn, ctx, next) {
+    if (Array.isArray(fn)) {
+      return fn.length ? options.compose(fn)(ctx, next) : Promise.resolve()
+    } else if (fn) {
+      return fn(ctx, next)
+    }
+    return Promise.resolve()
+  }
+
   return function prepareOutput (ctx, next) {
     debug(ctx.state._ermReqId + ' prepareOutput')
-    const postMiddleware = getPostMiddlewareForMethod(options, ctx.method, ctx.state.erm.statusCode)
+    let postMiddleware = getPostMiddlewareForMethod(options, ctx.method, ctx.state.erm.statusCode)
 
-    return Promise.resolve()
-      .then((resp) => {
-        if (postMiddleware) {
-          return postMiddleware(ctx)
-        } else {
-          return Promise.resolve()
-        }
-      })
+    return execMiddleware(postMiddleware, ctx)
       .then(() => {
         // TODO: this will, but should not, filter /count queries
         if (ctx.state.erm.result && options.filter) {
@@ -40,11 +44,7 @@ module.exports = function (options, excludedMap) {
         return options.outputFn(ctx)
       })
       .then((resp) => {
-        if (options.postProcess) {
-          return options.postProcess(ctx, next)
-        } else {
-          return Promise.resolve()
-        }
+        return execMiddleware(options.postProcess, ctx, next)
       })
   }
 }
