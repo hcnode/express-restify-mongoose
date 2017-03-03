@@ -1,7 +1,7 @@
 const assert = require('assert')
 const sinon = require('sinon')
 
-describe.only('access', () => {
+describe('access', () => {
   const access = require('../../../lib/koa/access')
 
   let next = sinon.stub().returns(Promise.resolve())
@@ -10,7 +10,7 @@ describe.only('access', () => {
     next.reset()
   })
 
-  describe.only('with sync options.access', () => {
+  describe('with sync options.access', () => {
     it('adds access field to ctx', () => {
       let options = {
         access: () => {
@@ -27,7 +27,7 @@ describe.only('access', () => {
         access(options)(ctx, next)
           .then((resp) => {
             sinon.assert.calledOnce(next)
-            assert.equal(ctx.access, 'private')
+            assert.equal(ctx.state._erm.access, 'private')
             resolve()
           }, (err) => {
             reject(new Error('Should not result in error: ' + err))
@@ -73,18 +73,20 @@ describe.only('access', () => {
         }
       }
 
-      access({
-        access: (ctx) => {
-          return Promise.resolve('private')
-        }
-      })(ctx)
-        .then((resp) => {
-          assert.equal(ctx.access, 'private')
-          return Promise.resolve()
-        }, (err) => {
-          assert.ok(!err)
-          return Promise.reject(err)
-        })
+      return new Promise((resolve,reject) => {
+        access({
+          access: (ctx) => {
+            return Promise.resolve('private')
+          }
+        })(ctx,next)
+          .then((resp) => {
+            assert.equal(ctx.state._erm.access, 'private')
+            resolve()
+          }, (err) => {
+            assert.ok(!err)
+            reject('Should not result in error')
+          })
+      });
     })
 
     it('calls onError', () => {
@@ -113,7 +115,7 @@ describe.only('access', () => {
       })
     })
 
-    it('raises an exception with unsupported parameter', done => {
+    it('raises an exception with unsupported parameter', () => {
       let ctx = {
         params: {},
         state: {

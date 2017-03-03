@@ -14,8 +14,9 @@ module.exports = function (options) {
   return function onError (ctx, next) {
     debug('%s onError request', ctx.state._ermReqId)
     return next()
-      .then(() => {
+      .then((resp) => {
         debug('%s onError response no error', ctx.state._ermReqId)
+        return Promise.resolve(resp)
       }, (err) => {
         debug('%s onError response error %s', ctx.state._ermReqId, err)
         const serializedErr = serializeError(err)
@@ -36,7 +37,7 @@ module.exports = function (options) {
 
         ctx.response.header['Content-Type'] = 'application/json'
 
-        ctx.status = ctx.state.erm.statusCode || 500
+        ctx.status = ctx.state.erm.statusCode
         ctx.body = options.buildErrorResponse ? options.buildErrorResponse(ctx, err, serializedErr) : serializedErr
       })
   }

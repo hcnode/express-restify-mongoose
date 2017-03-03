@@ -1,6 +1,6 @@
 'use strict'
 
-describe.skip('middleware', () => {
+describe('middleware', () => {
   require('./unit/middleware/access')
   require('./unit/middleware/ensureContentType')
   require('./unit/middleware/onError')
@@ -18,5 +18,8 @@ describe.skip('middleware', () => {
 
 describe.only('koa', () => {
   require('./unit/koa/access')
+  require('./unit/koa/ensureContentType')
+  require('./unit/koa/onError')
+  require('./unit/koa/outputFn')
 })
 
