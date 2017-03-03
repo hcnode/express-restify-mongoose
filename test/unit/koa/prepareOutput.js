@@ -36,11 +36,10 @@ describe('prepareOutput', () => {
           sinon.assert.calledWithExactly(outputFn, ctx)
           sinon.assert.notCalled(next)
           resolve()
-        }, (err) => {
+        }, () => {
           reject('should not result in error')
-        });
-    });
-
+        })
+    })
   })
 
   it('calls outputFn with default options and postCreate middleware', () => {
@@ -58,7 +57,7 @@ describe('prepareOutput', () => {
 
     let options = {
       outputFn: outputFn,
-      postCreate: compose([postCreate]),
+      postCreate: compose([postCreate])
     }
 
     return new Promise((resolve, reject) => {
@@ -69,10 +68,10 @@ describe('prepareOutput', () => {
           sinon.assert.calledWithExactly(outputFn, ctx)
           sinon.assert.notCalled(next)
           resolve()
-        }, (err) => {
+        }, () => {
           reject('should not result in error')
-        });
-    });
+        })
+    })
   })
 
   it('calls outputFn with default options and postRead middleware', () => {
@@ -90,7 +89,7 @@ describe('prepareOutput', () => {
 
     let options = {
       outputFn: outputFn,
-      postRead: compose([postRead]),
+      postRead: compose([postRead])
     }
 
     return new Promise((resolve, reject) => {
@@ -101,7 +100,7 @@ describe('prepareOutput', () => {
           sinon.assert.calledWithExactly(outputFn, ctx)
           sinon.assert.notCalled(next)
           resolve()
-        }, (err) => {
+        }, () => {
           reject('should not result in error')
         })
     })
@@ -115,42 +114,7 @@ describe('prepareOutput', () => {
           statusCode: 200,
           result: {
             name: 'Bob'
-          },
-        },
-        _ernReqId: 5
-      }
-    }
-
-    let postUpdate = sinon.stub().returns(Promise.resolve())
-
-    let options = {
-      outputFn: outputFn,
-      postUpdate: compose([postUpdate]),
-    }
-
-    return new Promise((resolve, reject) => {
-      prepareOutput(options)(ctx, next)
-        .then((resp) => {
-          sinon.assert.calledOnce(postUpdate)
-          sinon.assert.calledOnce(outputFn)
-          sinon.assert.calledWithExactly(outputFn, ctx)
-          sinon.assert.notCalled(next)
-          resolve()
-        }, (err) => {
-          reject('should not result in error')
-        })
-    })
-  })
-
-  it('calls outputFn with default options and postUpdate middleware', () => {
-    let ctx = {
-      method: 'PUT',
-      state: {
-        erm: {
-          statusCode: 200,
-          result: {
-            name: 'Bob'
-          },
+          }
         },
         _ernReqId: 5
       }
@@ -171,7 +135,42 @@ describe('prepareOutput', () => {
           sinon.assert.calledWithExactly(outputFn, ctx)
           sinon.assert.notCalled(next)
           resolve()
-        }, (err) => {
+        }, () => {
+          reject('should not result in error')
+        })
+    })
+  })
+
+  it('calls outputFn with default options and postUpdate middleware', () => {
+    let ctx = {
+      method: 'PUT',
+      state: {
+        erm: {
+          statusCode: 200,
+          result: {
+            name: 'Bob'
+          }
+        },
+        _ernReqId: 5
+      }
+    }
+
+    let postUpdate = sinon.stub().returns(Promise.resolve())
+
+    let options = {
+      outputFn: outputFn,
+      postUpdate: compose([postUpdate])
+    }
+
+    return new Promise((resolve, reject) => {
+      prepareOutput(options)(ctx, next)
+        .then((resp) => {
+          sinon.assert.calledOnce(postUpdate)
+          sinon.assert.calledOnce(outputFn)
+          sinon.assert.calledWithExactly(outputFn, ctx)
+          sinon.assert.notCalled(next)
+          resolve()
+        }, () => {
           reject('should not result in error')
         })
     })
@@ -185,7 +184,7 @@ describe('prepareOutput', () => {
           statusCode: 204,
           result: {
             name: 'Bob'
-          },
+          }
         },
         _ernReqId: 5
       }
@@ -206,7 +205,7 @@ describe('prepareOutput', () => {
           sinon.assert.calledWithExactly(outputFn, ctx)
           sinon.assert.notCalled(next)
           resolve()
-        }, (err) => {
+        }, () => {
           reject('should not result in error')
         })
     })
@@ -284,7 +283,6 @@ describe('prepareOutput', () => {
           })
       })
     })
-
 
     it(`outputFn errors are handled`, () => {
       let ctx = {

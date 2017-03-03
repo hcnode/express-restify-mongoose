@@ -14,8 +14,7 @@ describe('outputFn', () => {
 
   it('sends status code and message', () => {
     outputFn()(ctx)
-    assert(ctx.status, ctx.state.erm.statusCode);
-    assert(ctx.body, ctx.state.erm.result);
+    assert(ctx.status, ctx.state.erm.statusCode)
+    assert(ctx.body, ctx.state.erm.result)
   })
-
 })

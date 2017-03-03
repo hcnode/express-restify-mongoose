@@ -73,12 +73,12 @@ describe('access', () => {
         }
       }
 
-      return new Promise((resolve,reject) => {
+      return new Promise((resolve, reject) => {
         access({
           access: (ctx) => {
             return Promise.resolve('private')
           }
-        })(ctx,next)
+        })(ctx, next)
           .then((resp) => {
             assert.equal(ctx.state._erm.access, 'private')
             resolve()
@@ -86,7 +86,7 @@ describe('access', () => {
             assert.ok(!err)
             reject('Should not result in error')
           })
-      });
+      })
     })
 
     it('calls onError', () => {

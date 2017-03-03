@@ -18,7 +18,7 @@
   "peerDependencies": {
     "mongoose": "^4.0.0"
   },
-  "description": "Easily create a flexible REST interface for mongoose models",
+  "description": "Easily create a flexible REST interface for mongoose models and express, koa2, or restify",
   "devDependencies": {
     "babel-cli": "^6.6.0",
     "babel-core": "^6.7.0",

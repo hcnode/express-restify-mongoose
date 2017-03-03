@@ -32,8 +32,8 @@ describe('ensureContentType', () => {
           assert(err.message, 'missing_content_type')
           assert.equal(ctx.state._erm.access, undefined)
           resolve()
-        });
-    });
+        })
+    })
   })
 
   it('calls next with an error (invalid_content_type)', () => {
@@ -42,7 +42,7 @@ describe('ensureContentType', () => {
       request: {
         headers: {
           'content-type': 'invalid/type'
-        },
+        }
       },
       state: {
         _ermReqId: 1,
@@ -60,8 +60,8 @@ describe('ensureContentType', () => {
           assert(err.message, 'invalid_content_type')
           assert.equal(ctx.state._erm.access, undefined)
           resolve()
-        });
-    });
+        })
+    })
   })
 
   it('calls next', () => {
@@ -70,7 +70,7 @@ describe('ensureContentType', () => {
       request: {
         headers: {
           'content-type': 'application/json'
-        },
+        }
       },
       state: {
         _ermReqId: 1,
@@ -85,8 +85,8 @@ describe('ensureContentType', () => {
           sinon.assert.calledWithExactly(next)
           resolve()
         }, (err) => {
-          reject(new Error('Should not result in an error'))
-        });
-    });
+          reject(new Error('Should not result in an error: ' + err))
+        })
+    })
   })
 })

@@ -3,9 +3,7 @@
 const debug = require('debug')('erm:koa')
 const getPostMiddlewareForMethod = require('../api/shared').getPostMiddlewareForMethod
 
-
 module.exports = function (options, excludedMap) {
-
   function execMiddleware (fn, ctx, next) {
     if (Array.isArray(fn)) {
       return fn.length ? options.compose(fn)(ctx, next) : Promise.resolve()

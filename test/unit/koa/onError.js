@@ -25,22 +25,21 @@ describe('onError', () => {
   })
 
   it('no error', () => {
-
     return new Promise((resolve, reject) => {
       next.returns(Promise.resolve('should pass thru return value'))
       onError(options)(ctx, next)
         .then((resp) => {
           sinon.assert.calledOnce(next)
           assert(resp, 'should pass thru return value')
-          resolve();
+          resolve()
         }, (err) => {
-          reject(new Error('should not result in an error'))
+          reject(new Error('should not result in an error: ' + err))
         })
     })
   })
 
   it('error', () => {
-    let nextFail = function() {
+    let nextFail = function () {
       return Promise.reject(new Error('Should see error'))
     }
     return new Promise((resolve, reject) => {
@@ -50,11 +49,10 @@ describe('onError', () => {
           assert(ctx.response.header['Content-Type'], 'application/json')
           assert(ctx.body.message, 'Should see error')
           assert(ctx.body.name, 'Error')
-          resolve();
+          resolve()
         }, (err) => {
-          reject(new Error('should not result in an error'))
+          reject(new Error('should not result in an error: ' + err))
         })
     })
   })
-
 })

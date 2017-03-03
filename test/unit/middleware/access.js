@@ -5,8 +5,8 @@ const _ = require('lodash')
 describe('access', () => {
   const access = require('../../../lib/middleware/access')
 
-  const failIfErrorHandlerCalled = (err,req,res,next) => {
-    return next(new Error(`Should not call the error handler.`))
+  const failIfErrorHandlerCalled = (err, req, res, next) => {
+    return next(new Error(`Should not call the error handler.`, err))
   }
 
   let next = sinon.spy()
