@@ -71,6 +71,37 @@ PATCH http://localhost/api/v1/Customer/:id
 DELETE http://localhost/api/v1/Customer/:id
 ```
 
+### Koa 2 app
+
+This snippet generates the same endpoints as the Express app above.
+
+```js
+const Koa = require('koa')
+const bodyParser = require('koa-bodyparser')
+const Router = require('koa-router')
+const compose = require('koa-compose')
+const qs = require('koa-qs')    // Required for nested queries
+const mongoose = require('mongoose')
+
+let app = new Koa()
+app.use(bodyParser({ enableTypes: ['json'], strict: true }))
+qs(app)
+
+mongoose.connect('mongodb://localhost:27017/database')
+
+let router = new Router()
+app.serve(router, mongoose.model('Customer', new mongoose.Schema({
+  name: { type: String, required: true },
+  comment: { type: String }
+})))
+
+app.use(router.routes(), router.allowedMethods())
+
+app.listen(3000, () => {
+  console.log('Koa server listening on port 3000')
+})
+```
+
 ### Usage with [request](https://www.npmjs.com/package/request)
 
 ```js
@@ -183,7 +214,7 @@ const uri = restify.serve(router, model[, options])
 // uri = '/api/v1/Model'
 ```
 
-**router**: `express.Router()` instance (Express 4), `app` object (Express 3) or `server` object (restify)
+**router**: `express.Router()` instance (Express 4), `app` object (Express 3), `koa-router` object (Koa2) or `server` object (restify)
 
 **model**: mongoose model
 
@@ -247,6 +278,16 @@ version: '/v1/Entities/:id'
 <span class="label label-primary" title="type">boolean</span><span class="label label-success" title="default">false</span>
 
 Enable support for [restify](https://www.npmjs.com/package/restify) instead of [express](https://www.npmjs.com/package/express).
+
+#### koa
+<span class="label label-primary" title="type">boolean</span><span class="label label-success" title="default">false</span>
+
+Enable support for [koa2](https://http://koajs.com/) instead of [express](https://www.npmjs.com/package/express).
+
+#### compose
+<span class="label label-primary" title="type">function</span>
+
+Required for koa support. Must reference the koa2 version of the [koa-compose](https://github.com/koajs/compose/tree/next) package.
 
 #### name
 <span class="label label-primary" title="type">string</span><span class="label label-success" title="default">model name</span>
@@ -364,10 +405,11 @@ Whether to use `.findOneAndRemove()` or `.findById()` and then `.remove()`, allo
 
 #### preMiddleware
 <span class="label label-primary" title="type">function (req, res, next)</span>
+or <span class="label label-primary" title="type">function (ctx, next)</span> (koa)
 
-Middleware that runs before [preCreate](#preCreate), [preRead](#preRead), [preUpdate](#preUpdate) and [preDelete](#preDelete). 
+Middleware that runs before [preCreate](#preCreate), [preRead](#preRead), [preUpdate](#preUpdate) and [preDelete](#preDelete).
 
-##### Example
+##### Express Example
 
 ```js
 preMiddleware: function (req, res, next) {
@@ -376,11 +418,24 @@ preMiddleware: function (req, res, next) {
   })
 }
 ```
+##### Koa Example
+
+```js
+preMiddleware: function (ctx, next) {
+  return promiseFunction()
+    .then(() => {
+      return next()
+    })
+}
+```
 
 #### preCreate
 <span class="label label-primary" title="type">function (req, res, next)</span>
+or <span class="label label-primary" title="type">function (ctx, next)</span> (koa)
 
 Middleware that runs before creating a resource.
+
+##### Express Example
 
 ```js
 preCreate: function (req, res, next) {
@@ -389,17 +444,39 @@ preCreate: function (req, res, next) {
   })
 }
 ```
+##### Koa Example
+
+```js
+preCreate: function (ctx, next) {
+  return promiseFunction()
+    .then(() => {
+      return next()
+    })
+}
+```
 
 #### preRead
 <span class="label label-primary" title="type">function (req, res, next)</span>
+or <span class="label label-primary" title="type">function (ctx, next)</span> (koa)
 
 Middleware that runs before reading a resource.
 
+##### Express Example
 ```js
 preRead: function (req, res, next) {
   performAsyncLogic((err) => {
     next(err)
   })
+}
+```
+##### Koa Example
+
+```js
+preRead: function (ctx, next) {
+  return promiseFunction()
+    .then(() => {
+      return next()
+    })
 }
 ```
 
@@ -408,6 +485,7 @@ preRead: function (req, res, next) {
 
 Middleware that runs before updating a resource.
 
+##### Express Example
 ```js
 preUpdate: function (req, res, next) {
   performAsyncLogic((err) => {
@@ -415,8 +493,20 @@ preUpdate: function (req, res, next) {
   })
 }
 ```
+##### Koa Example
+
+```js
+preUpdate: function (ctx, next) {
+  return promiseFunction()
+    .then(() => {
+      return next()
+    })
+}
+```
 
 When `findOneAndUpdate: false`, the document is available which is useful for authorization as well as setting values.
+
+##### Express Example
 
 ```js
 findOneAndUpdate: false,
@@ -431,10 +521,28 @@ preUpdate: function (req, res, next) {
 }
 ```
 
+##### Koa Example
+
+```js
+findOneAndUpdate: false,
+preUpdate: function (ctx, next) {
+  if (ctx.state.erm.document.user !== ctx.state.user._id) {
+    return Promise.reject(new Error(401))
+  }
+
+  ctx.state.erm.document.set('lastRequestAt', new Date())
+
+  return next()
+}
+```
+
 #### preDelete
 <span class="label label-primary" title="type">function (req, res, next)</span>
+or <span class="label label-primary" title="type">function (ctx, next)</span> (koa)
 
 Middleware that runs before deleting a resource.
+
+##### Express Example
 
 ```js
 preDelete: function (req, res, next) {
@@ -444,7 +552,20 @@ preDelete: function (req, res, next) {
 }
 ```
 
+##### Koa Example
+
+```js
+preDelete: function (ctx, next) {
+  return promiseFunction()
+    .then(() => {
+      return next()
+    })
+}
+```
+
 When `findOneAndRemove: false`, the document is available which is useful for authorization as well as performing non-destructive removals.
+
+##### Express Example
 
 ```js
 findOneAndRemove: false,
@@ -462,12 +583,31 @@ preDelete: function (req, res, next) {
 }
 ```
 
+##### Koa Example
+
+```js
+findOneAndRemove: false,
+preDelete: function (ctx, next) {
+  if (ctx.state.erm.document.user !== ctx.state.user._id) {
+    return Promise.reject(new Error(401))
+  }
+
+  ctx.state.erm.document.deletedAt = new Date()
+  return ctx.state.erm.document.save()
+    .then( (doc) => {
+      ctx.status = 204
+      return Promise.resolve()
+    })
+}
+```
+
 #### access
-<span class="label label-primary" title="type">function (req[, done])</span>
+<span class="label label-primary" title="type">function (req[, done])</span> or
+<span class="label label-primary" title="type">function (ctx)</span> (koa)
 
-Returns or yields 'private', 'protected' or 'public'. It is called on GET, POST and PUT requests and filters out the fields defined in [private](#private) and [protected](#protected).
+Returns, yields or resolves to 'private', 'protected' or 'public'. It is called on GET, POST and PUT requests and filters out the fields defined in [private](#private) and [protected](#protected).
 
-##### Examples
+##### Express Examples
 
 Sync
 
@@ -491,8 +631,34 @@ access: function (req, done) {
 }
 ```
 
+##### Koa Examples
+
+Sync
+
+```js
+access: function (ctx) {
+  if (ctx.isAuthenticated()) {
+    return ctx.state.user.isAdmin ? 'private' : 'protected'
+  } else {
+    return 'public'
+  }
+}
+```
+
+Async
+
+```js
+access: function (ctx) {
+  return promiseFunction(ctx)
+    .then( (resp) => {
+      return Promise.resolve(resp ? 'public' : 'private')
+    })
+}
+```
+
 #### contextFilter
-<span class="label label-primary" title="type">function (model, req, done)</span>
+<span class="label label-primary" title="type">function (model, req, done)</span> or
+<span class="label label-primary" title="type">function (model, ctx, done)</span> (koa)
 
 Allows request specific filtering.
 
@@ -507,9 +673,12 @@ contextFilter: function (model, req, done) {
 ```
 
 #### postCreate
-<span class="label label-primary" title="type">function (req, res, next)</span>
+<span class="label label-primary" title="type">function (req, res, next)</span> or
+<span class="label label-primary" title="type">function (ctx, next)</span> (koa)
 
-Middleware that runs after successfully creating a resource. The unfiltered document is available on `req.erm.result`.
+Middleware that runs after successfully creating a resource. The unfiltered document is available on `req.erm.result` or 'ctx.state.erm.result' (koa).
+
+##### Express Example
 
 ```js
 postCreate: function (req, res, next) {
@@ -522,10 +691,27 @@ postCreate: function (req, res, next) {
 }
 ```
 
-#### postRead
-<span class="label label-primary" title="type">function (req, res, next)</span>
+##### Koa Example
 
-Middleware that runs after successfully reading a resource. The unfiltered document(s), or object(s) when `lean: false`, is available on `req.erm.result`.
+```js
+postCreate: function (ctx, next) {
+  const result = ctx.state.erm.result         // unfiltered document or object
+  const statusCode = ctx.state.erm.statusCode // 201
+
+  return promiseLogic()
+    .then( () => {
+      return next()
+  })
+}
+```
+
+#### postRead
+<span class="label label-primary" title="type">function (req, res, next)</span> or
+<span class="label label-primary" title="type">function (ctx, next)</span> (koa)
+
+Middleware that runs after successfully reading a resource. The unfiltered document(s), or object(s) when `lean: false`, is available on `req.erm.result` or 'ctx.state.erm.result' (koa).
+
+##### Express Example
 
 ```js
 postRead: function (req, res, next) {
@@ -537,12 +723,29 @@ postRead: function (req, res, next) {
   })
 }
 ```
+##### Koa Example
+
+```js
+postRead: function (ctx, next) {
+  const result = ctx.state.erm.result         // unfiltered document or object
+  const statusCode = ctx.state.erm.statusCode // 201
+
+  return promiseLogic()
+    .then( () => {
+      return next()
+  })
+}
+```
+
 
 #### postUpdate
-<span class="label label-primary" title="type">function (req, res, next)</span>
+<span class="label label-primary" title="type">function (req, res, next)</span> or
+<span class="label label-primary" title="type">function (ctx, next)</span> (koa)
 
-Middleware that runs after successfully updating a resource. The unfiltered document, or object when `lean: false`, is available on `req.erm.result`. 
+Middleware that runs after successfully updating a resource. The unfiltered document, or object when `lean: false`,
+is available on `req.erm.result` or 'ctx.state.erm.result' (koa).
 
+##### Express Example
 ```js
 postUpdate: function (req, res, next) {
   const result = req.erm.result         // unfiltered document or object
@@ -553,12 +756,27 @@ postUpdate: function (req, res, next) {
   })
 }
 ```
+##### Koa Example
+
+```js
+postUpdate: function (ctx, next) {
+  const result = ctx.state.erm.result         // unfiltered document or object
+  const statusCode = ctx.state.erm.statusCode // 201
+
+  return promiseLogic()
+    .then( () => {
+      return next()
+  })
+}
+```
 
 #### postDelete
-<span class="label label-primary" title="type">function (req, res, next)</span>
+<span class="label label-primary" title="type">function (req, res, next)</span> or
+<span class="label label-primary" title="type">function (ctx, next)</span> (koa)
 
 Middleware that runs after successfully deleting a resource.
 
+##### Express Example
 ```js
 postDelete: function (req, res, next) {
   const result = req.erm.result         // undefined
@@ -569,13 +787,27 @@ postDelete: function (req, res, next) {
   })
 }
 ```
+##### Koa Example
+
+```js
+postDelete: function (ctx, next) {
+  const result = ctx.state.erm.result         // unfiltered document or object
+  const statusCode = ctx.state.erm.statusCode // 201
+
+  return promiseLogic()
+    .then( () => {
+      return next()
+  })
+}
+```
 
 #### outputFn
-<span class="label label-primary" title="type">function (req, res)</span>
+<span class="label label-primary" title="type">function (req, res)</span> or
+<span class="label label-primary" title="type">function (ctx)</span> (koa)
 
-Function used to output the result. The filtered object is available on `req.erm.result`.
+Function used to output the result. The filtered object is available on `req.erm.result` or 'ctx.state.erm.result' (koa).
 
-##### Example
+##### Express Example
 
 ```js
 outputFn: function (req, res) {
@@ -586,12 +818,27 @@ outputFn: function (req, res) {
 }
 ```
 
+##### Koa Example
+
+```js
+outputFn: function (ctx) {
+  if (ctx.state.erm.result) {
+    ctx.body = ctx.state.erm.result
+  }
+  ctx.status = ctx.state.erm.statusCode || 200
+  return Promise.resolve()
+}
+```
+
 #### postProcess
 <span class="label label-primary" title="type">function (req, res, next)</span>
 
 Middleware that is called after output, useful for logging. The filtered object is available on `req.erm.result`.
 
 > Not guaranteed to execute after output if async operations are performed inside `outputFn`
+> Not used for koa. Instead use onComplete
+
+##### Express Example
 
 ```js
 postProcess: function (req, res, next) {
@@ -606,6 +853,7 @@ postProcess: function (req, res, next) {
 <span class="label label-primary" title="type">function (err, req, res, next)</span><span class="label label-success" title="default">serialize the entire error, except stack</span>
 
 > Leaving this as default may leak information about your database
+> Not used with Koa
 
 Function used to output an error.
 
@@ -613,6 +861,25 @@ Function used to output an error.
 
 ```js
 onError: function (err, req, res, next) {
+  const statusCode = req.erm.statusCode // 400 or 404
+
+  res.status(statusCode).json({
+    message: err.message
+  })
+}
+```
+
+#### onComplete
+<span class="label label-primary" title="type">function (ctx, next)</span><span class="label label-success" title="default">serialize the entire error, except stack</span>
+
+> Koa-only
+
+Middleware that is inserted at the begining of the middleware stack to handle and output results and errors.
+
+##### Example
+
+```js
+onComplete: function (ctx, next) {
   const statusCode = req.erm.statusCode // 400 or 404
 
   res.status(statusCode).json({
