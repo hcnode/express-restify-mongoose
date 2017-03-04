@@ -90,12 +90,12 @@ qs(app)
 mongoose.connect('mongodb://localhost:27017/database')
 
 let router = new Router()
+app.use(router.middleware())
+
 app.serve(router, mongoose.model('Customer', new mongoose.Schema({
   name: { type: String, required: true },
   comment: { type: String }
 })))
-
-app.use(router.routes(), router.allowedMethods())
 
 app.listen(3000, () => {
   console.log('Koa server listening on port 3000')
