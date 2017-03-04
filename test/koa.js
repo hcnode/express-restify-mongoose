@@ -2,7 +2,7 @@
 
 const Koa = require('koa')
 const bodyParser = require('koa-bodyparser')
-const Router = require('koa-router')
+const Router = require('koa-better-router')
 const compose = require('koa-compose')
 const qs = require('koa-qs')
 
@@ -25,10 +25,11 @@ function KoaApp () {
   // Must use koa-qs with koa to parse nested queries
   qs(app)
   let router = new Router()
+  router.loadMethods()
   app.ermTestRouter = router
   app.ermTestCompose = compose
   app.ermTestIsKoa = true
-  app.use(router.routes(), router.allowedMethods())
+  app.use(router.middleware())
   return app
 }
 

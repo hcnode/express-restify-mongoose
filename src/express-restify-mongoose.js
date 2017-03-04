@@ -111,32 +111,37 @@ const restify = function (app, model, opts = {}) {
     options.outputFn = outputFn(!options.restify)
   }
 
+  let initRoute
+
   if (options.koa) { // koa2
-    app.use(function ermInit (ctx, next) {
+
+    initRoute = function (ctx, next) {
       // At the start of each request, add our initial operation state to be stored in ctx.erm and
       // ctx._erm
       _.merge(ctx.state, initialOperationState.serializeToRequest())
       ctx.state._ermReqId = ctx.state._ermReqId || (++reqId)
-      debug('%s initialize context state', ctx.state._ermReqId)
-      return next()
-    })
+      debug('%s initRoute', ctx.state._ermReqId)
+      // With koa, resultHandler is the first middleware and handles promise rejections
+      const resultHandler = options.resultHandler ? options.resultHandler : require('./koa/resultHandler')(options)
+      return resultHandler(ctx, next)
+        .then((resp) => {
+          debug('%s initRoute response', ctx.state._ermReqId)
+        })
+    }
 
-    // With koa, onError is the first middleware and handles promise rejections
-    const resultHandler = options.resultHandler ? options.resultHandler : require('./koa/resultHandler')(options)
-    app.use(resultHandler)
   } else {    // Express and Restify
     if (!options.onError) {
       options.onError = onError(!options.restify)
     }
 
-    app.use((req, res, next) => {
+    initRoute = function (req, res, next) {
       // At the start of each request, add our initial operation state, to be stored in req.erm and
       // req._erm
       _.merge(req, initialOperationState.serializeToRequest())
       req._ermReqId = req._ermReqId || (++reqId)
       debug('%s initialize context state', req._ermReqId)
       next()
-    })
+    }
   }
 
   const accessMiddleware = options.access ? access(options) : ensureValueIsArray([])
@@ -154,25 +159,25 @@ const restify = function (app, model, opts = {}) {
   // Retrieval
 
   app.get(
-    restPaths.allDocuments, prepareQuery, options.preMiddleware, contextMiddleware,
+    restPaths.allDocuments, initRoute, prepareQuery, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getItems,
     prepareOutput
   )
 
   app.get(
-    restPaths.allDocumentsCount, prepareQuery, options.preMiddleware, contextMiddleware,
+    restPaths.allDocumentsCount, initRoute, prepareQuery, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getCount,
     prepareOutput
   )
 
   app.get(
-    restPaths.singleDocument, prepareQuery, options.preMiddleware, contextMiddleware,
+    restPaths.singleDocument, initRoute, prepareQuery, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getItem,
     prepareOutput
   )
 
   app.get(
-    restPaths.singleDocumentShallow, prepareQuery, options.preMiddleware, contextMiddleware,
+    restPaths.singleDocumentShallow, initRoute, prepareQuery, options.preMiddleware, contextMiddleware,
     options.preRead, accessMiddleware, ops.getShallow,
     prepareOutput
   )
@@ -180,7 +185,7 @@ const restify = function (app, model, opts = {}) {
   // Creation
 
   app.post(
-    restPaths.allDocuments, prepareQuery, ensureContentType, options.preMiddleware,
+    restPaths.allDocuments, initRoute, prepareQuery, ensureContentType, options.preMiddleware,
     options.preCreate, accessMiddleware, filterBodyMiddleware, ops.createObject,
     prepareOutput
   )
@@ -188,7 +193,7 @@ const restify = function (app, model, opts = {}) {
   // Modification
 
   app.post(
-    restPaths.singleDocument,
+    restPaths.singleDocument, initRoute,
     deprecatePrepareQuery('the POST method to update resources will be removed.'),
     ensureContentType, options.preMiddleware, contextMiddleware,
     options.preUpdate, accessMiddleware, filterBodyMiddleware, ops.modifyObject,
@@ -196,7 +201,7 @@ const restify = function (app, model, opts = {}) {
   )
 
   app.put(
-    restPaths.singleDocument,
+    restPaths.singleDocument, initRoute,
     deprecatePrepareQuery(`the PUT method will replace rather than update a resource.`),
     ensureContentType, options.preMiddleware, contextMiddleware,
     options.preUpdate, accessMiddleware, filterBodyMiddleware, ops.modifyObject,
@@ -205,7 +210,7 @@ const restify = function (app, model, opts = {}) {
 
   app.patch(
     restPaths.singleDocument,
-    prepareQuery, ensureContentType, options.preMiddleware, contextMiddleware,
+    initRoute, prepareQuery, ensureContentType, options.preMiddleware, contextMiddleware,
     options.preUpdate, accessMiddleware, filterBodyMiddleware, ops.modifyObject,
     prepareOutput
   )
@@ -214,14 +219,14 @@ const restify = function (app, model, opts = {}) {
 
   app.delete(
     restPaths.allDocuments,
-    prepareQuery, options.preMiddleware, contextMiddleware,
+    initRoute, prepareQuery, options.preMiddleware, contextMiddleware,
     options.preDelete, ops.deleteItems,
     prepareOutput
   )
 
   app.delete(
     restPaths.singleDocument,
-    prepareQuery, options.preMiddleware, contextMiddleware,
+    initRoute, prepareQuery, options.preMiddleware, contextMiddleware,
     options.preDelete, ops.deleteItem,
     prepareOutput
   )
