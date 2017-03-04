@@ -855,8 +855,7 @@ postProcess: function (req, res, next) {
 #### onError
 <span class="label label-primary" title="type">function (err, req, res, next)</span><span class="label label-success" title="default">serialize the entire error, except stack</span>
 
-> Leaving this as default may leak information about your database
-> Not used with Koa
+> Leaving this as default may leak information about your database. Not used with Koa
 
 Function used to output an error.
 
@@ -875,7 +874,7 @@ onError: function (err, req, res, next) {
 #### resultHandler
 <span class="label label-primary" title="type">function (ctx, next)</span><span class="label label-success" title="default">serialize the entire error, except stack</span>
 
-> Koa-only
+> Leaving this as default may leak information about your database. Used only with Koa.
 
 Middleware that is inserted at the beginning of the middleware stack to handle and output results and errors.
 
