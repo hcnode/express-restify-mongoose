@@ -55,7 +55,7 @@ app.listen(3000, () => {
 })
 ```
 
-...automatically generates those endpoints.
+...automatically generates these endpoints.
 
 ```
 GET http://localhost/api/v1/Customer/count
@@ -78,7 +78,7 @@ This snippet generates the same endpoints as the Express app above.
 ```js
 const Koa = require('koa')
 const bodyParser = require('koa-bodyparser')
-const Router = require('koa-router')
+const Router = require('koa-better-router')
 const compose = require('koa-compose')
 const qs = require('koa-qs')    // Required for nested queries
 const mongoose = require('mongoose')
@@ -226,6 +226,8 @@ const uri = restify.serve(router, model[, options])
 - [version](#version)
 - [idProperty](#idproperty)
 - [restify](#restify)
+- [koa](#koa)
+- [compose](#compose)
 - [name](#name)
 - [allowRegex](#allowregex)
 - [runValidators](#runvalidators)
@@ -250,6 +252,7 @@ const uri = restify.serve(router, model[, options])
 - [outputFn](#outputfn)
 - [postProcess](#postprocess)
 - [onError](#onerror)
+- [resultHandler](#resultHandler)
 
 #### prefix
 <span class="label label-primary" title="type">string</span><span class="label label-success" title="default">/api</span>
@@ -287,7 +290,7 @@ Enable support for [koa2](https://http://koajs.com/) instead of [express](https:
 #### compose
 <span class="label label-primary" title="type">function</span>
 
-Required for koa support. Must reference the koa2 version of the [koa-compose](https://github.com/koajs/compose/tree/next) package.
+Required and only used for koa support. Must reference the koa2 version of the [koa-compose](https://github.com/koajs/compose/tree/next) package.
 
 #### name
 <span class="label label-primary" title="type">string</span><span class="label label-success" title="default">model name</span>
@@ -676,7 +679,7 @@ contextFilter: function (model, req, done) {
 <span class="label label-primary" title="type">function (req, res, next)</span> or
 <span class="label label-primary" title="type">function (ctx, next)</span> (koa)
 
-Middleware that runs after successfully creating a resource. The unfiltered document is available on `req.erm.result` or 'ctx.state.erm.result' (koa).
+Middleware that runs after successfully creating a resource. The unfiltered document is available on `req.erm.result` or `ctx.state.erm.result` (koa).
 
 ##### Express Example
 
@@ -709,7 +712,7 @@ postCreate: function (ctx, next) {
 <span class="label label-primary" title="type">function (req, res, next)</span> or
 <span class="label label-primary" title="type">function (ctx, next)</span> (koa)
 
-Middleware that runs after successfully reading a resource. The unfiltered document(s), or object(s) when `lean: false`, is available on `req.erm.result` or 'ctx.state.erm.result' (koa).
+Middleware that runs after successfully reading a resource. The unfiltered document(s), or object(s) when `lean: false`, is available on `req.erm.result` or `ctx.state.erm.result` (koa).
 
 ##### Express Example
 
@@ -743,7 +746,7 @@ postRead: function (ctx, next) {
 <span class="label label-primary" title="type">function (ctx, next)</span> (koa)
 
 Middleware that runs after successfully updating a resource. The unfiltered document, or object when `lean: false`,
-is available on `req.erm.result` or 'ctx.state.erm.result' (koa).
+is available on `req.erm.result` or `ctx.state.erm.result` (koa).
 
 ##### Express Example
 ```js
@@ -805,7 +808,7 @@ postDelete: function (ctx, next) {
 <span class="label label-primary" title="type">function (req, res)</span> or
 <span class="label label-primary" title="type">function (ctx)</span> (koa)
 
-Function used to output the result. The filtered object is available on `req.erm.result` or 'ctx.state.erm.result' (koa).
+Function used to output the result. The filtered object is available on `req.erm.result` or `ctx.state.erm.result` (koa).
 
 ##### Express Example
 
@@ -836,7 +839,7 @@ outputFn: function (ctx) {
 Middleware that is called after output, useful for logging. The filtered object is available on `req.erm.result`.
 
 > Not guaranteed to execute after output if async operations are performed inside `outputFn`
-> Not used for koa. Instead use onComplete
+> For Koa, consider using onSuccess for logging.
 
 ##### Express Example
 
@@ -869,22 +872,26 @@ onError: function (err, req, res, next) {
 }
 ```
 
-#### onComplete
+#### resultHandler
 <span class="label label-primary" title="type">function (ctx, next)</span><span class="label label-success" title="default">serialize the entire error, except stack</span>
 
 > Koa-only
 
-Middleware that is inserted at the begining of the middleware stack to handle and output results and errors.
+Middleware that is inserted at the beginning of the middleware stack to handle and output results and errors.
 
 ##### Example
 
 ```js
-onComplete: function (ctx, next) {
-  const statusCode = req.erm.statusCode // 400 or 404
-
-  res.status(statusCode).json({
-    message: err.message
-  })
+resultHandler: function (ctx, next) {
+  let t0 = new Date()
+  return next()
+    .then( () => {
+      debug('finished handling route in %s ms', ((new Date()) - t0))
+    }, (err) => {
+      ctx.response.header['Content-Type'] = 'application/json'
+      ctx.status = err.status || 400
+      ctx.body =  serializeError(err)
+    })
 }
 ```
 
