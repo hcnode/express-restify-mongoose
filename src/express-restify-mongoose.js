@@ -122,8 +122,8 @@ const restify = function (app, model, opts = {}) {
     })
 
     // With koa, onError is the first middleware and handles promise rejections
-    const onError = options.onError ? options.onError : require('./koa/onError')(options)
-    app.use(onError)
+    const resultHandler = options.resultHandler ? options.resultHandler : require('./koa/resultHandler')(options)
+    app.use(resultHandler)
   } else {    // Express and Restify
     if (!options.onError) {
       options.onError = onError(!options.restify)

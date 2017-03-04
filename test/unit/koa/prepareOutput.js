@@ -26,7 +26,8 @@ describe('prepareOutput', () => {
     }
 
     let options = {
-      outputFn: outputFn
+      outputFn: outputFn,
+      compose: compose
     }
 
     return new Promise((resolve, reject) => {
@@ -34,7 +35,7 @@ describe('prepareOutput', () => {
         .then((resp) => {
           sinon.assert.calledOnce(outputFn)
           sinon.assert.calledWithExactly(outputFn, ctx)
-          sinon.assert.notCalled(next)
+          sinon.assert.calledOnce(next)
           resolve()
         }, () => {
           reject('should not result in error')
@@ -52,21 +53,25 @@ describe('prepareOutput', () => {
         _ernReqId: 5
       }
     }
-
-    let postCreate = sinon.stub().returns(Promise.resolve())
+    let calledMiddleware = 0
+    let postCreate = function (ctx, next) {
+      ++calledMiddleware
+      return next()
+    }
 
     let options = {
       outputFn: outputFn,
-      postCreate: compose([postCreate])
+      postCreate: compose([postCreate]),
+      compose: compose
     }
 
     return new Promise((resolve, reject) => {
       prepareOutput(options)(ctx, next)
         .then((resp) => {
-          sinon.assert.calledOnce(postCreate)
+          assert(calledMiddleware, 1)
           sinon.assert.calledOnce(outputFn)
           sinon.assert.calledWithExactly(outputFn, ctx)
-          sinon.assert.notCalled(next)
+          sinon.assert.calledOnce(next)
           resolve()
         }, () => {
           reject('should not result in error')
@@ -85,20 +90,25 @@ describe('prepareOutput', () => {
       }
     }
 
-    let postRead = sinon.stub().returns(Promise.resolve())
+    let calledMiddleware = 0
+    let postRead = function (ctx, next) {
+      ++calledMiddleware
+      return next()
+    }
 
     let options = {
       outputFn: outputFn,
-      postRead: compose([postRead])
+      postRead: compose([postRead]),
+      compose: compose
     }
 
     return new Promise((resolve, reject) => {
       prepareOutput(options)(ctx, next)
         .then((resp) => {
-          sinon.assert.calledOnce(postRead)
+          assert(calledMiddleware, 1)
           sinon.assert.calledOnce(outputFn)
           sinon.assert.calledWithExactly(outputFn, ctx)
-          sinon.assert.notCalled(next)
+          sinon.assert.calledOnce(next)
           resolve()
         }, () => {
           reject('should not result in error')
@@ -120,20 +130,25 @@ describe('prepareOutput', () => {
       }
     }
 
-    let postUpdate = sinon.stub().returns(Promise.resolve())
+    let calledMiddleware = 0
+    let postUpdate = function (ctx, next) {
+      ++calledMiddleware
+      return next()
+    }
 
     let options = {
       outputFn: outputFn,
-      postUpdate: compose([postUpdate])
+      postUpdate: compose([postUpdate]),
+      compose: compose
     }
 
     return new Promise((resolve, reject) => {
       prepareOutput(options)(ctx, next)
         .then((resp) => {
-          sinon.assert.calledOnce(postUpdate)
+          assert(calledMiddleware, 1)
           sinon.assert.calledOnce(outputFn)
           sinon.assert.calledWithExactly(outputFn, ctx)
-          sinon.assert.notCalled(next)
+          sinon.assert.calledOnce(next)
           resolve()
         }, () => {
           reject('should not result in error')
@@ -155,20 +170,25 @@ describe('prepareOutput', () => {
       }
     }
 
-    let postUpdate = sinon.stub().returns(Promise.resolve())
+    let calledMiddleware = 0
+    let postUpdate = function (ctx, next) {
+      ++calledMiddleware
+      return next()
+    }
 
     let options = {
       outputFn: outputFn,
-      postUpdate: compose([postUpdate])
+      postUpdate: compose([postUpdate]),
+      compose: compose
     }
 
     return new Promise((resolve, reject) => {
       prepareOutput(options)(ctx, next)
         .then((resp) => {
-          sinon.assert.calledOnce(postUpdate)
+          assert(calledMiddleware, 1)
           sinon.assert.calledOnce(outputFn)
           sinon.assert.calledWithExactly(outputFn, ctx)
-          sinon.assert.notCalled(next)
+          sinon.assert.calledOnce(next)
           resolve()
         }, () => {
           reject('should not result in error')
@@ -190,20 +210,25 @@ describe('prepareOutput', () => {
       }
     }
 
-    let postDelete = sinon.stub().returns(Promise.resolve())
+    let calledMiddleware = 0
+    let postDelete = function (ctx, next) {
+      ++calledMiddleware
+      return next()
+    }
 
     let options = {
       outputFn: outputFn,
-      postDelete: compose([postDelete])
+      postDelete: compose([postDelete]),
+      compose: compose
     }
 
     return new Promise((resolve, reject) => {
       prepareOutput(options)(ctx, next)
         .then((resp) => {
-          sinon.assert.calledOnce(postDelete)
+          assert(calledMiddleware, 1)
           sinon.assert.calledOnce(outputFn)
           sinon.assert.calledWithExactly(outputFn, ctx)
-          sinon.assert.notCalled(next)
+          sinon.assert.calledOnce(next)
           resolve()
         }, () => {
           reject('should not result in error')
@@ -222,11 +247,16 @@ describe('prepareOutput', () => {
       }
     }
 
-    let postRead = sinon.stub().returns(Promise.reject(new Error('an error occurred')))
+    let calledMiddleware = 0
+    let postRead = function (ctx, next) {
+      ++calledMiddleware
+      return Promise.reject(new Error('an error occurred'))
+    }
 
     let options = {
       outputFn: outputFn,
-      postRead: compose([postRead])
+      postRead: compose([postRead]),
+      compose: compose
     }
 
     return new Promise((resolve, reject) => {
@@ -234,7 +264,7 @@ describe('prepareOutput', () => {
         .then((resp) => {
           reject('should result in error')
         }, (err) => {
-          sinon.assert.calledOnce(postRead)
+          assert(calledMiddleware, 1)
           assert(err.message, 'an error occurred')
           sinon.assert.notCalled(outputFn)
           sinon.assert.notCalled(next)
@@ -269,14 +299,15 @@ describe('prepareOutput', () => {
           assert.ok(status.calledOutput === true)
           status.calledPostProcess = true
           return next()
-        }
+        },
+        compose: compose
       }
 
       return new Promise((resolve, reject) => {
         prepareOutput(options)(ctx, next)
           .then((resp) => {
             resolve()
-          }, (err) => {
+          }, () => {
             assert.ok(status.calledOutput === true)
             assert.ok(status.calledPostProcess === true)
             reject('should not result in error')
@@ -299,7 +330,8 @@ describe('prepareOutput', () => {
         outputFn: (ctx) => {
           return Promise.reject(outputError)
         },
-        postProcess: _.noop
+        postProcess: _.noop,
+        compose: compose
       }
 
       return new Promise((resolve, reject) => {
@@ -328,7 +360,8 @@ describe('prepareOutput', () => {
       const options = {
         postProcess: (ctx) => {
           return Promise.reject(postProcessError)
-        }
+        },
+        compose: compose
       }
 
       return new Promise((resolve, reject) => {
