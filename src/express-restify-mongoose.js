@@ -114,7 +114,6 @@ const restify = function (app, model, opts = {}) {
   let initRoute
 
   if (options.koa) { // koa2
-
     initRoute = function (ctx, next) {
       // At the start of each request, add our initial operation state to be stored in ctx.erm and
       // ctx._erm
@@ -128,7 +127,6 @@ const restify = function (app, model, opts = {}) {
           debug('%s initRoute response', ctx.state._ermReqId)
         })
     }
-
   } else {    // Express and Restify
     if (!options.onError) {
       options.onError = onError(!options.restify)

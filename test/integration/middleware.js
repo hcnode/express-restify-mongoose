@@ -1181,7 +1181,7 @@ module.exports = function (createFn, setup, dismantle) {
         assert.equal(res.statusCode, 400)
         let erm = assertFnCalled(options.postCreate, app.ermTestIsKoa)
         assert.equal(erm.result.name, 'Bob')
-        assert.equal(erm.statusCode, 400)
+        assert.equal(erm.statusCode, app.ermTestIsKoa?201:400)
         sinon.assert.notCalled(options.postProcess)
         done()
       })
