@@ -2,20 +2,21 @@ const assert = require('assert')
 const mongoose = require('mongoose')
 const request = require('request')
 
-module.exports = function (createFn, setup, dismantle) {
-  const erm = require('../../lib/express-restify-mongoose')
-  const db = require('./setup')()
+const erm = require('../../lib/express-restify-mongoose')
+const db = require('./setup')()
 
-  const testPort = 30023
-  const testUrl = `http://localhost:${testPort}`
-  const invalidId = 'invalid-id'
-  const randomId = mongoose.Types.ObjectId().toHexString()
-  const updateMethods = ['PATCH', 'POST', 'PUT']
+const testPort = 30023
+const testUrl = `http://localhost:${testPort}`
+const invalidId = 'invalid-id'
+const randomId = mongoose.Types.ObjectId().toHexString()
+const updateMethods = ['PATCH', 'POST', 'PUT']
 
-  describe('Update documents', () => {
-    describe('findOneAndUpdate: true', () => {
+module.exports = {
+
+  updateTrue: function (createFn, setup, dismantle) {
+    describe('Update documents, findOneAndUpdate: true', () => {
       let app = createFn()
-      let router = app.ermTestRouter || app
+      let router = app.koaRouter || app
       let server
       let customers
       let products
@@ -30,15 +31,15 @@ module.exports = function (createFn, setup, dismantle) {
           erm.serve(router, db.models.Customer, {
             findOneAndUpdate: true,
             restify: app.isRestify,
-            compose: app.ermTestCompose,
-            koa: app.ermTestIsKoa
+            compose: app.compose,
+            koa: app.isKoa
           })
 
           erm.serve(router, db.models.Invoice, {
             findOneAndUpdate: true,
             restify: app.isRestify,
-            compose: app.ermTestCompose,
-            koa: app.ermTestIsKoa
+            compose: app.compose,
+            koa: app.isKoa
           })
 
           db.models.Customer.create([{
@@ -67,8 +68,8 @@ module.exports = function (createFn, setup, dismantle) {
             return db.models.Customer.create({
               name: 'Jane',
               purchases: [
-                {item: products[0]._id, number: 1},
-                {item: products[1]._id, number: 3}
+                { item: products[0]._id, number: 1 },
+                { item: products[1]._id, number: 3 }
               ],
               returns: [products[0]._id, products[1]._id]
             })
@@ -87,7 +88,8 @@ module.exports = function (createFn, setup, dismantle) {
 
       updateMethods.forEach((method) => {
         it(`${method} /Customer/:id 200 - empty body`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${customers[0]._id}`,
             json: {}
           }, (err, res, body) => {
@@ -99,7 +101,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Customer/:id 200 - created id`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${customers[0]._id}`,
             json: {
               name: 'Mike'
@@ -113,7 +116,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Customer/:id 400 - cast error`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${customers[0]._id}`,
             json: {
               age: 'not a number'
@@ -134,7 +138,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Customer/:id 400 - mongo error`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${customers[0]._id}`,
             json: {
               name: 'John'
@@ -163,7 +168,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Customer/:id 400 - missing content type`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${customers[0]._id}`
           }, (err, res, body) => {
             assert.ok(!err)
@@ -177,7 +183,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Customer/:id 400 - invalid content type`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${customers[0]._id}`,
             formData: {}
           }, (err, res, body) => {
@@ -192,7 +199,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Customer/:id 404 - invalid id`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${invalidId}`,
             json: {
               name: 'Mike'
@@ -205,7 +213,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Customer/:id 404 - random id`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${randomId}`,
             json: {
               name: 'Mike'
@@ -218,7 +227,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Invoice/:id 200 - referencing customer and product ids as strings`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Invoice/${invoice._id}`,
             json: {
               customer: customers[1]._id.toHexString(),
@@ -234,7 +244,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Invoice/:id 200 - referencing customer and products ids as strings`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Invoice/${invoice._id}`,
             json: {
               customer: customers[1]._id.toHexString(),
@@ -250,7 +261,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Invoice/:id 200 - referencing customer and product ids`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Invoice/${invoice._id}`,
             json: {
               customer: customers[1]._id,
@@ -266,7 +278,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Invoice/:id 200 - referencing customer and products ids`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Invoice/${invoice._id}`,
             json: {
               customer: customers[1]._id,
@@ -287,7 +300,8 @@ module.exports = function (createFn, setup, dismantle) {
               assert.notEqual(invoice.amount, 200)
               invoice.amount = 200
 
-              request({ method,
+              request({
+                method,
                 url: `${testUrl}/api/v1/Invoice/${invoice._id}`,
                 json: invoice
               }, (err, res, body) => {
@@ -307,7 +321,8 @@ module.exports = function (createFn, setup, dismantle) {
               assert.notEqual(invoice.amount, 200)
               invoice.amount = 200
 
-              request({ method,
+              request({
+                method,
                 url: `${testUrl}/api/v1/Invoice/${invoice._id}`,
                 json: invoice
               }, (err, res, body) => {
@@ -324,7 +339,8 @@ module.exports = function (createFn, setup, dismantle) {
 
           it(`${method} /Invoice/:id?populate=customer,products 200 - update with populated customer`, (done) => {
             db.models.Invoice.findById(invoice._id).populate('customer products').exec().then((invoice) => {
-              request({ method,
+              request({
+                method,
                 url: `${testUrl}/api/v1/Invoice/${invoice._id}`,
                 qs: {
                   populate: 'customer,products'
@@ -349,9 +365,10 @@ module.exports = function (createFn, setup, dismantle) {
           })
 
           it(`${method} /Customer/:id 200 - update with reduced count of populated returns`, (done) => {
-            db.models.Customer.findOne({name: 'Jane'}).populate('purchases returns').exec().then((customer) => {
+            db.models.Customer.findOne({ name: 'Jane' }).populate('purchases returns').exec().then((customer) => {
               customer.returns = [customer.returns[1]]
-              request({ method,
+              request({
+                method,
                 url: `${testUrl}/api/v1/Customer/${customer._id}`,
                 qs: {
                   populate: 'returns,purchases.item'
@@ -402,10 +419,12 @@ module.exports = function (createFn, setup, dismantle) {
         })
       })
     })
+  },
 
-    describe('findOneAndUpdate: false', () => {
+  updateFalse: function (createFn, setup, dismantle) {
+    describe('Update documents, findOneAndUpdate: false', () => {
       let app = createFn()
-      let router = app.ermTestRouter || app
+      let router = app.koaRouter || app
       let server
       let customers
       let products
@@ -420,15 +439,15 @@ module.exports = function (createFn, setup, dismantle) {
           erm.serve(router, db.models.Customer, {
             findOneAndUpdate: false,
             restify: app.isRestify,
-            compose: app.ermTestCompose,
-            koa: app.ermTestIsKoa
+            compose: app.compose,
+            koa: app.isKoa
           })
 
           erm.serve(router, db.models.Invoice, {
             findOneAndUpdate: false,
             restify: app.isRestify,
-            compose: app.ermTestCompose,
-            koa: app.ermTestIsKoa
+            compose: app.compose,
+            koa: app.isKoa
           })
 
           db.models.Customer.create([{
@@ -457,8 +476,8 @@ module.exports = function (createFn, setup, dismantle) {
             return db.models.Customer.create({
               name: 'Jane',
               purchases: [
-                {item: products[0]._id, number: 1},
-                {item: products[1]._id, number: 3}
+                { item: products[0]._id, number: 1 },
+                { item: products[1]._id, number: 3 }
               ],
               returns: [products[0]._id, products[1]._id]
             })
@@ -477,7 +496,8 @@ module.exports = function (createFn, setup, dismantle) {
 
       updateMethods.forEach((method) => {
         it(`${method} /Customer/:id 200 - empty body`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${customers[0]._id}`,
             json: {}
           }, (err, res, body) => {
@@ -489,7 +509,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Customer/:id 200 - created id`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${customers[0]._id}`,
             json: {
               name: 'Mike'
@@ -503,7 +524,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Customer/:id 400 - validation error`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${customers[0]._id}`,
             json: {
               age: 'not a number'
@@ -530,7 +552,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Customer/:id 400 - mongo error`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${customers[0]._id}`,
             json: {
               name: 'John'
@@ -563,7 +586,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Customer/:id 400 - missing content type`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${customers[0]._id}`
           }, (err, res, body) => {
             assert.ok(!err)
@@ -577,7 +601,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Customer/:id 400 - invalid content type`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${customers[0]._id}`,
             formData: {
               name: 'Mike'
@@ -594,7 +619,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Customer/:id 404 - invalid id`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${invalidId}`,
             json: {
               name: 'Mike'
@@ -607,7 +633,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Customer/:id 404 - random id`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Customer/${randomId}`,
             json: {
               name: 'Mike'
@@ -620,7 +647,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Invoice/:id 200 - referencing customer and product ids as strings`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Invoice/${invoice._id}`,
             json: {
               customer: customers[1]._id.toHexString(),
@@ -636,7 +664,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Invoice/:id 200 - referencing customer and products ids as strings`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Invoice/${invoice._id}`,
             json: {
               customer: customers[1]._id.toHexString(),
@@ -652,7 +681,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Invoice/:id 200 - referencing customer and product ids`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Invoice/${invoice._id}`,
             json: {
               customer: customers[1]._id,
@@ -668,7 +698,8 @@ module.exports = function (createFn, setup, dismantle) {
         })
 
         it(`${method} /Invoice/:id 200 - referencing customer and products ids`, (done) => {
-          request({ method,
+          request({
+            method,
             url: `${testUrl}/api/v1/Invoice/${invoice._id}`,
             json: {
               customer: customers[1]._id,
@@ -689,7 +720,8 @@ module.exports = function (createFn, setup, dismantle) {
               assert.notEqual(invoice.amount, 200)
               invoice.amount = 200
 
-              request({ method,
+              request({
+                method,
                 url: `${testUrl}/api/v1/Invoice/${invoice._id}`,
                 json: invoice
               }, (err, res, body) => {
@@ -709,7 +741,8 @@ module.exports = function (createFn, setup, dismantle) {
               assert.notEqual(invoice.amount, 200)
               invoice.amount = 200
 
-              request({ method,
+              request({
+                method,
                 url: `${testUrl}/api/v1/Invoice/${invoice._id}`,
                 json: invoice
               }, (err, res, body) => {
@@ -726,7 +759,8 @@ module.exports = function (createFn, setup, dismantle) {
 
           it(`${method} /Invoice/:id?populate=customer,products 200 - update with populated customer`, (done) => {
             db.models.Invoice.findById(invoice._id).populate('customer products').exec().then((invoice) => {
-              request({ method,
+              request({
+                method,
                 url: `${testUrl}/api/v1/Invoice/${invoice._id}`,
                 qs: {
                   populate: 'customer,products'
@@ -751,9 +785,10 @@ module.exports = function (createFn, setup, dismantle) {
           })
 
           it(`${method} /Customer/:id 200 - update with reduced count of populated returns`, (done) => {
-            db.models.Customer.findOne({name: 'Jane'}).populate('purchases returns').exec().then((customer) => {
+            db.models.Customer.findOne({ name: 'Jane' }).populate('purchases returns').exec().then((customer) => {
               customer.returns = [customer.returns[1]]
-              request({ method,
+              request({
+                method,
                 url: `${testUrl}/api/v1/Customer/${customer._id}`,
                 qs: {
                   populate: 'returns,purchases.item'
@@ -804,5 +839,5 @@ module.exports = function (createFn, setup, dismantle) {
         })
       })
     })
-  })
+  }
 }

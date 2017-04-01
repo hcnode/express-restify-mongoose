@@ -2,7 +2,8 @@
 
 const Koa = require('koa')
 const bodyParser = require('koa-bodyparser')
-const Router = require('koa-better-router')
+const KoaRouter = require('./integration/KoaRouter')
+const KoaBetterRouter = require('./integration/KoaBetterRouter')
 const compose = require('koa-compose')
 const qs = require('koa-qs')
 
@@ -17,59 +18,103 @@ const middlewareTests = require('./integration/middleware')
 const optionsTests = require('./integration/options')
 const virtualsTests = require('./integration/virtuals')
 
+let idx = 0
 const db = require('./integration/setup')()
 
-function KoaApp () {
-  let app = new Koa()
-  app.use(bodyParser({ enableTypes: ['json'], strict: true }))
-  // Must use koa-qs with koa to parse nested queries
-  qs(app)
-  let router = new Router()
-  router.loadMethods()
-  app.ermTestRouter = router
-  app.ermTestCompose = compose
-  app.ermTestIsKoa = true
-  app.use(router.middleware())
-  return app
+class KoaTest {
+  constructor (routerClass) {
+    this._routerClass = routerClass
+    this.idx = ++idx
+    this.isKoa = true
+    this.compose = compose
+  }
+
+  get koaRouter () {
+    return this._router
+  }
+
+  listen (...args) {
+    return this._app.listen(...args)
+  }
+
+  create () {
+    this._router = new this._routerClass({ parentId: this.idx })
+    return this
+  }
+
+  setup (callback) {
+    this._app = new Koa()
+    this._app.use(bodyParser({ enableTypes: ['json'], strict: true }))
+    // Must use koa-qs with koa to parse nested queries
+    qs(this._app)
+    this._router.init()
+    this._app.use(this._router.routes(), this._router.allowedMethods())
+    db.initialize(function (err) {
+      if (err) {
+        return callback(err)
+      } else {
+        db.reset(function (err) {
+          return callback(err)
+        })
+      }
+    })
+  }
+
+  dismantle (app, server, callback) {
+    db.close((err) => {
+      if (err) {
+        return callback(err)
+      }
+
+      if (app.close) {
+        return app.close(callback)
+      }
+
+      server.close(callback)
+    })
+  }
 }
 
-function setup (callback) {
-  db.initialize((err) => {
-    if (err) {
-      return callback(err)
+function runTests (Router) {
+  function testCtx (testFn) {
+    let koaTest = new KoaTest(Router)
+
+    function create (...args) {
+      return koaTest.create(...args)
     }
 
-    db.reset(callback)
+    function setup (callback) {
+      return koaTest.setup(function (err) {
+        callback(err)
+      })
+    }
+
+    function dismantle (...args) {
+      return koaTest.dismantle(...args)
+    }
+
+    testFn(create, setup, dismantle)
+  }
+
+  function testAll (tests) {
+    Object.keys(tests).forEach((test) => {
+      testCtx(tests[test])
+    })
+  }
+
+  describe(Router.name, () => {
+    testCtx(createTests)
+    testCtx(readTests)
+    testAll(updateTests)
+    testAll(deleteTests.deleteTrue)
+    testAll(accessTests.accessPrivate)
+    testCtx(contextFilterTests)
+    testCtx(hookTests)
+    testAll(middlewareTests)
+    testAll(optionsTests)
+    testAll(virtualsTests)
   })
 }
 
-function dismantle (app, server, callback) {
-  db.close((err) => {
-    if (err) {
-      return callback(err)
-    }
-
-    if (app.close) {
-      return app.close(callback)
-    }
-
-    server.close(callback)
-  })
-}
-
-function runTests (createFn) {
-  describe(createFn.name, () => {
-    createTests(createFn, setup, dismantle)
-    readTests(createFn, setup, dismantle)
-    updateTests(createFn, setup, dismantle)
-    deleteTests(createFn, setup, dismantle)
-    accessTests(createFn, setup, dismantle)
-    contextFilterTests(createFn, setup, dismantle)
-    hookTests(createFn, setup, dismantle)
-    middlewareTests(createFn, setup, dismantle)
-    optionsTests(createFn, setup, dismantle)
-    virtualsTests(createFn, setup, dismantle)
-  })
-}
-
-runTests(KoaApp)
+runTests(KoaBetterRouter)
+runTests(KoaRouter)

@@ -25,7 +25,7 @@ function getContext (state, ctx) {
     // We need to add both the document context AND the document to state.
     const documentQuery = context
       .findOne().and({
-        [options.idProperty]: ctx.params.id
+        [options.idProperty]: ctx.params.id !== 'count' ? ctx.params.id : undefined
       })
       .lean(false).read(options.readPreference)
 

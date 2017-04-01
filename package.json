@@ -28,6 +28,7 @@
     "in-publish": "^2.0.0",
     "istanbul": ">=1.0.0-alpha.2",
     "koa": "^2.0.0-alpha.7",
+    "koa-router": "jpravetz/koa-router.git#master",
     "koa-better-router": "^2.1.1",
     "koa-bodyparser": "^3.2.0",
     "koa-compose": "^3.2.1",

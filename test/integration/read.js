@@ -13,7 +13,7 @@ module.exports = function (createFn, setup, dismantle) {
 
   describe('Read documents', () => {
     let app = createFn()
-    let router = app.ermTestRouter || app
+    let router = app.koaRouter || app
     let server
     let customers
 
@@ -25,14 +25,14 @@ module.exports = function (createFn, setup, dismantle) {
 
         erm.serve(router, db.models.Customer, {
           restify: app.isRestify,
-          compose: app.ermTestCompose,
-          koa: app.ermTestIsKoa
+          compose: app.compose,
+          koa: app.isKoa
         })
 
         erm.serve(router, db.models.Invoice, {
           restify: app.isRestify,
-          compose: app.ermTestCompose,
-          koa: app.ermTestIsKoa
+          compose: app.compose,
+          koa: app.isKoa
         })
 
         db.models.Product.create({
