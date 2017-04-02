@@ -71,14 +71,14 @@ PATCH http://localhost/api/v1/Customer/:id
 DELETE http://localhost/api/v1/Customer/:id
 ```
 
-### Koa 2 app
+### Koa app (^v2.2.0)
 
 This snippet generates the same endpoints as the Express app above.
 
 ```js
 const Koa = require('koa')
 const bodyParser = require('koa-bodyparser')
-const Router = require('koa-better-router')
+const Router = require('koa-router')
 const compose = require('koa-compose')
 const qs = require('koa-qs')    // Required for nested queries
 const mongoose = require('mongoose')
@@ -90,17 +90,24 @@ qs(app)
 mongoose.connect('mongodb://localhost:27017/database')
 
 let router = new Router()
-app.use(router.middleware())
+app.use(router.routes(),router.allowedMethods())
 
 app.serve(router, mongoose.model('Customer', new mongoose.Schema({
   name: { type: String, required: true },
   comment: { type: String }
-})))
+})), {
+  koa: true,
+  compose: compose
+})
 
 app.listen(3000, () => {
   console.log('Koa server listening on port 3000')
 })
 ```
+
+The module has been tested with koa-router and koa-better-router, however a wrapper class
+is needed to map method names and ensure defaults are set correctly. Refer to test files
+for example wrapper classes.
 
 ### Usage with [request](https://www.npmjs.com/package/request)
 
@@ -214,7 +221,8 @@ const uri = restify.serve(router, model[, options])
 // uri = '/api/v1/Model'
 ```
 
-**router**: `express.Router()` instance (Express 4), `app` object (Express 3), `koa-router` object (Koa2) or `server` object (restify)
+**router**: `express.Router()` instance (Express 4), `app` object (Express 3), `koa-router` or 'koa-better-router' objects (Koa) or `server` object (restify).
+_Note: `koa-router` support depends on [this fix](https://github.com/alexmingoia/koa-router/pull/345)._
 
 **model**: mongoose model
 
@@ -285,12 +293,12 @@ Enable support for [restify](https://www.npmjs.com/package/restify) instead of [
 #### koa
 <span class="label label-primary" title="type">boolean</span><span class="label label-success" title="default">false</span>
 
-Enable support for [koa2](https://http://koajs.com/) instead of [express](https://www.npmjs.com/package/express).
+Enable support for [koa](https://http://koajs.com/) instead of [express](https://www.npmjs.com/package/express).
 
 #### compose
 <span class="label label-primary" title="type">function</span>
 
-Required and only used for koa support. Must reference the koa2 version of the [koa-compose](https://github.com/koajs/compose/tree/next) package.
+Required and only used for koa support. Must reference the [koa-compose](https://github.com/koajs/compose/tree/next) package.
 
 #### name
 <span class="label label-primary" title="type">string</span><span class="label label-success" title="default">model name</span>
